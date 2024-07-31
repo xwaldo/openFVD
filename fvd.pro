@@ -20,22 +20,26 @@
 
 
 # DEPENDENCIES
-# 
-# QT (tested with 5.4.0)
-# glew (for Windows and Linux builds only)
+#
+# QT (tested with 5.14.2)
+# glew
 # glm (tested with 0.9.5.1-1)
 # lib3ds
 
-CONFIG	+= qt
-QT       += core gui widgets printsupport opengl
+CONFIG += qt
+QT     += core gui widgets printsupport opengl
 
 #CONFIG += exceptions \
 #          rtti
 
-TARGET = FVD
+CONFIG += debug
+
+TARGET = FVD_0.8a
 TEMPLATE = app
 
 SOURCES += main.cpp\
+    core/stlreader.cpp \
+    core/common.cpp \
     core/undohandler.cpp \
     core/undoaction.cpp \
     core/trackhandler.cpp \
@@ -54,7 +58,6 @@ SOURCES += main.cpp\
     core/mnode.cpp \
     core/function.cpp \
     core/exportfuncs.cpp \
-    osx/common.cpp \
     renderer/trackmesh.cpp \
     renderer/mytexture.cpp \
     renderer/myshader.cpp \
@@ -79,7 +82,9 @@ SOURCES += main.cpp\
     ui/conversionpanel.cpp \
     core/secnlcsv.cpp
 
-HEADERS  += core/undohandler.h \
+HEADERS += core/undohandler.h \
+    core/stlreader.h \
+    core/common.h \
     core/undoaction.h \
     core/trackhandler.h \
     core/track.h \
@@ -97,7 +102,6 @@ HEADERS  += core/undohandler.h \
     core/mnode.h \
     core/function.h \
     core/exportfuncs.h \
-    osx/common.h \
     renderer/trackmesh.h \
     renderer/mytexture.h \
     renderer/myshader.h \
@@ -123,7 +127,7 @@ HEADERS  += core/undohandler.h \
     lenassert.h \
     core/secnlcsv.h
 
-FORMS    += ui/transitionwidget.ui \
+FORMS += ui/transitionwidget.ui \
     ui/trackwidget.ui \
     ui/trackproperties.ui \
     ui/smoothui.ui \
@@ -136,69 +140,32 @@ FORMS    += ui/transitionwidget.ui \
     ui/exportui.ui \
     ui/conversionpanel.ui
 
-!unix:!macx {
-    INCLUDEPATH += "./ui/"
-    INCLUDEPATH += "./renderer/"
-    INCLUDEPATH += "./core/"
+INCLUDEPATH += "./ui/"
+INCLUDEPATH += "./renderer/"
+INCLUDEPATH += "./core/"
 
-	INCLUDEPATH += "C:\Development\Libraries\glew-1.12.0\include" # path-to-glew/include
-	INCLUDEPATH += "C:\Development\Libraries\glm" #path-to-glm"
-	INCLUDEPATH += "C:\Development\Libraries\lib3ds-20080909\src" #path-to-lib3ds
+INCLUDEPATH += "[glew include]"
+INCLUDEPATH += "[glm include]"
+INCLUDEPATH += "[lib3ds include]"
+INCLUDEPATH += "[libbacktrace include]"
 
-    RC_FILE = winicon.rc
+# GL and GLU, OS install
+LIBS += -lGL
+LIBS += -lGLU
 
-    LIBS += -lOpenGL32
-    LIBS += -lGlU32
-	LIBS += "C:\Development\Libraries\glew-1.12.0\lib\Release\x64\glew32.lib" #path-to-glew\lib\Release\Win32\glew32.lib
-	LIBS += "C:\Development\Libraries\glew-1.12.0\bin\Release\x64\glew32.dll" #path-to-glew\bin\Release\Win32\glew32.dll
-	LIBS += "C:\Development\Libraries\lib3ds-20080909\build-lib3ds-64Bit-Release\release\lib3ds.dll" #path-to-glew\bin\Release\Win32\glew32.dll
-}
+# GLEW, compiled from source
+LIBS += "[Path to libGLEW.so]"
 
-unix:!macx {
-    INCLUDEPATH += "./ui/"
-    INCLUDEPATH += "./renderer/"
-    INCLUDEPATH += "./core/"
+# lib3ds, compiled from source
+LIBS += "[Path to lib3ds.so]"
 
-    LIBS += -lGL
-    LIBS += -lGLU
-    LIBS += -lGLEW
+# libbacktrace, compiled from source
+LIBS += "[Path to libbacktrace.a]"
 
-    LIBS += -lX11
-    LIBS += -L /usr/local/lib/
-    LIBS += -l3ds
-}
+LIBS += -lX11
+LIBS += -L /usr/local/lib/
 
-macx {
-    ICON = fvd.icns
-    QMAKE_INFO_PLIST = ./osx/resources/Info.plist
-
-    INCLUDEPATH += "./ui/"
-    INCLUDEPATH += "./renderer/"
-    INCLUDEPATH += "./core/"
-    INCLUDEPATH += "./glm/"
-    INCLUDEPATH += "/usr/local/include/"
-
-    LIBS += -framework Foundation -framework Cocoa
-    LIBS += -L /usr/local/lib/
-    LIBS += -l3ds
-
-    QMAKE_CFLAGS_X86_64 += -mmacosx-version-min=10.6
-    QMAKE_CXXFLAGS_X86_64 = $$QMAKE_CFLAGS_X86_64
-    QMAKE_CXXFLAGS_RELEASE += -O2
-
-    OBJECTIVE_SOURCES += \
-        osx/Document.mm \
-        osx/MainDelagate.mm \
-        osx/NSApplicationMain.mm
-
-    HEADERS += \
-        osx/Document.h \
-        osx/MainDelagate.h \
-        osx/NSApplicationMain.h
-
-    SOURCES +=  \
-        osx/Init.cpp
-}
+RC_FILE = winicon.rc
 
 RESOURCES += \
     resources.qrc
@@ -224,6 +191,8 @@ OTHER_FILES += \
     shaders/metal.dat \
     shaders/floor.vert \
     shaders/floor.frag \
+    shaders/stl.vert \
+    shaders/stl.frag \
     shaders/debug.vert \
     shaders/debug.frag \
     metalnormals.png \

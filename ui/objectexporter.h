@@ -25,23 +25,22 @@ namespace Ui {
 class objectExporter;
 }
 
-class objectExporter : public QDialog
-{
-    Q_OBJECT
-    
-public:
-    explicit objectExporter(QWidget *parent = 0);
-    ~objectExporter();
+class objectExporter : public QDialog {
+  Q_OBJECT
 
-    bool update();
-    
+public:
+  explicit objectExporter(QWidget *parent = 0);
+  ~objectExporter();
+
+  bool update();
+
 private slots:
-    void on_buttonBox_accepted();
+  void on_buttonBox_accepted();
 
 private:
-    int curTrackIndex;
+  int curTrackIndex;
 
-    Ui::objectExporter *ui;
+  Ui::objectExporter *ui;
 };
 
 #endif // OBJECTEXPORTER_H

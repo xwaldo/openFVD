@@ -1,20 +1,29 @@
-####################
-# open FVD++ v0.79 #
-####################
+# open FVD++ v0.8(?) #
 
 Stephan (Lenny) Alt, 2012-2016, alt.stephan@web.de
 
-#########
-# Intro #
-#########
+# Introduction #
 
-Welcome to FVD++, a next generation FVD tool inspired by newton2 (by Keith (Entropy) Cohn).
-It is mainly aimed for coaster enthusiasts creating sophisticated force and geometry based coasters.
-That said the tool is still development and I take no warranty of its usefulness in its current state (see License information below).
+Trying to bring FVD++ back from the brink (maybe).
 
-#############
-# Changelog #
-#############
+# Housekeeping #
+
+`clang-format -style=llvm`
+
+# Changelog (0.8a+) #
+
+v0.8 Alpha:
+- two .stl meshes are loadable
+- background texture can be resized
+- added backtrace to fvd.log
+- added export nl2 csv
+- fixed displacement of csv track after project load
+- fixed issue with poor performance on lNode.deleteAt()
+- fixed nl2 csv import
+- readd protections: zero velocity in geometric sections
+- readd protections: zero velocity in forced sections
+
+# Changelog (old) #
 
 v0.79:
 - added nolimits 2 csv import
@@ -127,40 +136,12 @@ v0.1 Alpha:
 - OpenGL shaders visualising important data (like forces, roll speed and track flexion).
 - PoV mode enabling the ability to check the track inside FVD++
 
-
-###################
-# Having Trouble? #
-###################
-
-#### I can't use visualizations ####
-- The visualizations use OpenGL 3.1 shader technology, make sure your graphics card / drivers support OpenGL 3.1
-
-
-#### I don't know how to do XY ####
-- read through the official documentation, this document should explain nearly every feature of FVD++
-- Visit the FVD++ Thread on NoLimitsExchange (http://forum.nolimits-exchange.com/)
-
-
-#######################
-# Found a Bug / Crash #
-#######################
-
-Please let me know if you found a bug / crash either by posting in the NLE forum or by mailing me (alt.stephan@web.de).
-Please include as much information as possible, try to save the track that bugged out and send me the saved .fvd file.
-If the program crashed try to recreate the crash scenario and describe how you got the program to crash in a detailed way.
-
-
-#############
 # Thanks to #
-#############
 
-- Lucas van den Bosch for creating the official documentation and youtube tutorial channel
-- Ercan "geforcefan" Akyürek for deploying and testing the tool on Mac systems
- 
+- Lucas van den Bosch for creating the official documentation and YouTube tutorials.
+- Ercan "geforcefan" Akyürek for deploying and testing the tool on Mac systems.
 
-#######################
 # License information #
-#######################
 
 FVD++, an advanced coaster design tool for NoLimits and NoLimits2
 Copyright (C) 2012-2015, Stephan "Lenny" Alt <alt.stephan@web.de>
@@ -177,4 +158,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-
