@@ -11,7 +11,7 @@ Veia is trying to bring FVD++ back from the brink.
 - `clang-format -style=llvm`
 - Change paths to deps. in `fvd.pro`.
 
-# Changelog (0.8a+) #
+# Changelog #
 
 v0.8 Alpha:
 - two .stl meshes are loadable
@@ -23,8 +23,7 @@ v0.8 Alpha:
 - fixed nl2 csv import
 - readd protections: zero velocity in geometric sections
 - readd protections: zero velocity in forced sections
-
-# Changelog (old) #
+- removed support for macOS
 
 v0.79:
 - added nolimits 2 csv import
