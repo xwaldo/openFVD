@@ -8,7 +8,8 @@ Veia is trying to bring FVD++ back from the brink.
 
 # Housekeeping #
 
-`clang-format -style=llvm`
+- `clang-format -style=llvm`
+- Change paths to deps. in `fvd.pro`.
 
 # Changelog (0.8a+) #
 
