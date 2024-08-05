@@ -45,6 +45,8 @@ public slots:
 
   void on_heartlineBox_valueChanged(double arg1);
 
+  void on_gaugeBox_valueChanged(double arg1);
+
   void on_defaultColorButton_released();
 
   void ondefaultColor_received();

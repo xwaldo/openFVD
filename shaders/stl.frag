@@ -21,15 +21,14 @@ uniform vec3 solidColor;
 uniform int wire;
 uniform float edgeWidth;
 
-// todo: clean this up
-// todo: remove auv, buv
 void main(void)
 {
-  vec3 m_color = solidColor;
-  vec3 normal = normalize(bNormal+6.f*cross(bNormal, vec3(1.f, 0.f, 0.f)));
+  //vec3 bump = texture(metalTex, bUv).xyz-vec3(0.5f, 0.5f, 0.5f);
+  vec3 m_color = solidColor;//+0.75f*bump.xxx;
+  vec3 normal = normalize(bNormal+6.f*cross(bNormal, vec3(1.f, 0.f, 0.f)));//*bump.y + 6.f*cross(bNormal, vec3(0.f, 0.f, 1.f))*bump.z);
   vec3 h = normalize(normalize(-bPosition.xyz) - lightDir);
   float specular = max(dot(h, normal), 1.f);
-  vec3 reflection = vec3(0.f, 0.f, 0.f);
+  vec3 reflection = vec3(0.f, 0.f, 0.f);//-normalize(reflect(vec3(bPosition), normal));
   specular = (0.5f*pow(specular, 120.f) + 0.5f*pow(specular, 12.f));
   reflection = texture(skyTex, reflection).xyz;
   float diffusal = max(dot(normal, -lightDir), 0.f);

@@ -36,7 +36,7 @@ extern glViewWidget *glView;
 track::track() {}
 
 track::track(trackHandler *_parent, glm::vec3 startPos, float startYaw,
-             float heartLine) {
+             float heartLine, float gauge) {
   this->anchorNode = new mnode(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0, 0, -1),
                                0., 10.f, 1., 0.);
   this->startPos = startPos;
@@ -48,6 +48,7 @@ track::track(trackHandler *_parent, glm::vec3 startPos, float startYaw,
   anchorNode->fEnergy = 0.5f * anchorNode->fVel * anchorNode->fVel +
                         F_G * anchorNode->fPosHearty(0.9 * heartLine);
   this->fHeart = heartLine;
+  this->fGauge = gauge;
   fFriction = 0.03f;
   fResistance = 2e-5;
   hasChanged = true;
@@ -62,8 +63,8 @@ track::track(trackHandler *_parent, glm::vec3 startPos, float startYaw,
   style = generic;
 
   // testing backtrace
-  //int *foo = (int*)-1;  // make a bad pointer
-  //printf("%d\n", *foo); // intentionally causes a segmentation fault
+  // int *foo = (int*)-1;  // make a bad pointer
+  // printf("%d\n", *foo); // intentionally causes a segmentation fault
 }
 
 track::~track() {
@@ -1161,6 +1162,7 @@ QString track::saveTrack(fstream &file, trackWidget *_widget) {
   writeBytes(&file, (const char *)&anchorNode->forceLateral, sizeof(float));
 
   writeBytes(&file, (const char *)&fHeart, sizeof(float));
+  writeBytes(&file, (const char *)&fGauge, sizeof(float));
   writeBytes(&file, (const char *)&fFriction, sizeof(float));
   writeBytes(&file, (const char *)&fResistance, sizeof(float));
 
@@ -1206,6 +1208,7 @@ QString track::loadTrack(fstream &file, trackWidget *_widget) {
   anchorNode->forceLateral = readFloat(&file);
 
   fHeart = readFloat(&file);
+  fGauge = readFloat(&file);
   fFriction = readFloat(&file);
   fResistance = readFloat(&file);
 

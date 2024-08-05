@@ -67,7 +67,6 @@ class optionsMenu;
 class conversionPanel;
 class graphWidget;
 class trackHandler;
-class objectExporter;
 
 namespace Ui {
 class MainWindow;
@@ -163,8 +162,6 @@ public slots:
   void showMessage(QString msg, int msec = 5000);
 
 private slots:
-  void on_actionExport_Model_As_triggered();
-
   void on_actionExport_triggered();
 
 private:
@@ -176,7 +173,6 @@ private:
   QString currentFileName;
   exportUi *exportScreen;
   conversionPanel *mConversion;
-  objectExporter *mObjectExporter;
 };
 
 class NoEditDelegate : public QStyledItemDelegate {

@@ -103,6 +103,7 @@ void handler(int sig) {
   backtrace_error_handling(state);
 
   abort();
+  //exit(1);
 }
 
 int main(int argc, char *argv[]) {

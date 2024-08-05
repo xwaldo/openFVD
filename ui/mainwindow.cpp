@@ -25,7 +25,6 @@
 #include "exportui.h"
 #include "graphwidget.h"
 #include "mnode.h"
-#include "objectexporter.h"
 #include "optionsmenu.h"
 #include "trackwidget.h"
 #include "undoaction.h"
@@ -106,9 +105,6 @@ MainWindow::MainWindow(QWidget *parent)
                                (~Qt::WindowMinimizeButtonHint));
   exportScreen->setWindowFlags(exportScreen->windowFlags() &
                                (~Qt::WindowContextHelpButtonHint));
-
-  mObjectExporter = new objectExporter(this);
-  mObjectExporter->setWindowFlags(exportScreen->windowFlags());
 
   setUndoButtons();
   undoChanges = false;
@@ -680,11 +676,6 @@ void MainWindow::showAll() {
     mGraphWidget->show();
   ui->tabFrame->show();
   ui->statusBar->show();
-}
-
-void MainWindow::on_actionExport_Model_As_triggered() {
-  mObjectExporter->update();
-  mObjectExporter->show();
 }
 
 void MainWindow::on_actionExport_triggered() {

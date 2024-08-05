@@ -64,4 +64,6 @@ void readBytes(std::stringstream *file, void *_ptr, size_t length);
 
 void writeToExportFile(std::fstream *file, QList<bezier_t *> &bezList);
 
+void writeToExportFileAscii(std::fstream *file, QList<bezier_t *> &bezList);
+
 #endif // EXPORTFUNCS_H
