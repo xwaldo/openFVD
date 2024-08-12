@@ -198,7 +198,7 @@
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>15</height>
+               <height>20</height>
               </size>
              </property>
              <property name="font">
@@ -219,6 +219,9 @@
              <property name="text">
               <string>Position:</string>
              </property>
+             <property name="wordWrap">
+              <bool>false</bool>
+             </property>
              <property name="textInteractionFlags">
               <set>Qt::TextInteractionFlag::NoTextInteraction</set>
              </property>
@@ -235,7 +238,7 @@
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>15</height>
+               <height>20</height>
               </size>
              </property>
              <property name="font">
@@ -246,6 +249,9 @@
              </property>
              <property name="text">
               <string>Roll:</string>
+             </property>
+             <property name="wordWrap">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -260,7 +266,7 @@
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>15</height>
+               <height>20</height>
               </size>
              </property>
              <property name="font">
@@ -271,6 +277,9 @@
              </property>
              <property name="text">
               <string>Pitch:</string>
+             </property>
+             <property name="wordWrap">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -291,7 +300,7 @@
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>15</height>
+               <height>20</height>
               </size>
              </property>
              <property name="font">
@@ -302,6 +311,9 @@
              </property>
              <property name="text">
               <string>Yaw:</string>
+             </property>
+             <property name="wordWrap">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -316,7 +328,7 @@
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>15</height>
+               <height>20</height>
               </size>
              </property>
              <property name="font">
@@ -327,6 +339,9 @@
              </property>
              <property name="text">
               <string>Speed:</string>
+             </property>
+             <property name="wordWrap">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -341,7 +356,7 @@
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>15</height>
+               <height>20</height>
               </size>
              </property>
              <property name="font">
@@ -352,6 +367,9 @@
              </property>
              <property name="text">
               <string>y-Accel:</string>
+             </property>
+             <property name="wordWrap">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -366,7 +384,7 @@
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>15</height>
+               <height>20</height>
               </size>
              </property>
              <property name="font">
@@ -377,6 +395,9 @@
              </property>
              <property name="text">
               <string>x-Accel:</string>
+             </property>
+             <property name="wordWrap">
+              <bool>false</bool>
              </property>
             </widget>
            </item>

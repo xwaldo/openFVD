@@ -3,7 +3,7 @@
  <class>graphWidget</class>
  <widget class="QWidget" name="graphWidget">
   <property name="windowModality">
-   <enum>Qt::NonModal</enum>
+   <enum>Qt::WindowModality::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="focusPolicy">
-   <enum>Qt::StrongFocus</enum>
+   <enum>Qt::FocusPolicy::StrongFocus</enum>
   </property>
   <property name="windowTitle">
    <string>Graphs</string>
@@ -33,7 +33,7 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <widget class="QTabWidget" name="tabWidget">
       <property name="minimumSize">
@@ -49,14 +49,14 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="graphChooser">
        <attribute name="title">
         <string>Graph List</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
-        <property name="margin">
+        <property name="margin" stdset="0">
          <number>0</number>
         </property>
         <item row="0" column="0">
@@ -73,8 +73,11 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(64, 64, 64);</string>
+          </property>
           <property name="selectionMode">
-           <enum>QAbstractItemView::NoSelection</enum>
+           <enum>QAbstractItemView::SelectionMode::NoSelection</enum>
           </property>
           <property name="rootIsDecorated">
            <bool>true</bool>
@@ -290,13 +293,13 @@
      </widget>
      <widget class="QFrame" name="frame">
       <property name="frameShape">
-       <enum>QFrame::Panel</enum>
+       <enum>QFrame::Shape::Panel</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Sunken</enum>
+       <enum>QFrame::Shadow::Sunken</enum>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <property name="margin">
+       <property name="margin" stdset="0">
         <number>2</number>
        </property>
        <item>
@@ -305,22 +308,28 @@
           <cursorShape>CrossCursor</cursorShape>
          </property>
          <property name="contextMenuPolicy">
-          <enum>Qt::CustomContextMenu</enum>
+          <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
          </property>
          <property name="inputMethodHints">
-          <set>Qt::ImhNone</set>
+          <set>Qt::InputMethodHint::ImhNone</set>
          </property>
          <widget class="Line" name="povLine">
           <property name="geometry">
            <rect>
             <x>5</x>
             <y>0</y>
-            <width>2</width>
+            <width>1</width>
             <height>301</height>
            </rect>
           </property>
+          <property name="styleSheet">
+           <string notr="true">QFrame {
+  border: 1px solid #7F7F7F;
+  background: transparent;
+}</string>
+          </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
           <property name="lineWidth">
            <number>4</number>
@@ -329,7 +338,7 @@
            <number>0</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
          </widget>
         </widget>

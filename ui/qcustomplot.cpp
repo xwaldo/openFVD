@@ -9200,7 +9200,7 @@ QCustomPlot::QCustomPlot(QWidget *parent)
       mPlotLayout(0), mAutoAddPlottableToLegend(true),
       mAntialiasedElements(QCP::aeNone), mNotAntialiasedElements(QCP::aeNone),
       mInteractions(0), mSelectionTolerance(8), mNoAntialiasingOnDrag(false),
-      mBackgroundBrush(Qt::white, Qt::SolidPattern), mBackgroundScaled(true),
+      mBackgroundBrush(QColor(53,53,53), Qt::SolidPattern), mBackgroundScaled(true),
       mBackgroundScaledMode(Qt::KeepAspectRatioByExpanding), mCurrentLayer(0),
       mPlottingHints(QCP::phCacheLabels | QCP::phForceRepaint),
       mMultiSelectModifier(Qt::ControlModifier), mPaintBuffer(size()),
