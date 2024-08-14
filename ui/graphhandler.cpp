@@ -470,8 +470,8 @@ void graphHandler::fillBoundaryGraphList(QCPAxis *xAxis, bool _argument) {
     curGraph = new QCPGraph(xAxis, usedAxis);
     graphList.append(curGraph);
 
-    curGraph->setPen(QPen(QColor(0, 0, 0, 150), 1, Qt::DashDotLine));
-    curGraph->setBrush(QBrush(QColor(0, 0, 0, 20)));
+    curGraph->setPen(QPen(QColor(255, 255, 255, 150), 1, Qt::DashDotLine));
+    curGraph->setBrush(QBrush(QColor(255, 255, 255, 20)));
 
     double n1, n2;
     if (_argument == TIME) {
@@ -505,8 +505,8 @@ void graphHandler::fillBoundaryGraphList(QCPAxis *xAxis, bool _argument) {
     curGraph = new QCPGraph(xAxis, usedAxis);
     graphList.append(curGraph);
 
-    curGraph->setPen(QPen(QColor(0, 0, 0, 150), 1, Qt::DashDotLine));
-    curGraph->setBrush(QBrush(QColor(0, 0, 0, 20)));
+    curGraph->setPen(QPen(QColor(255, 255, 255, 150), 1, Qt::DashDotLine));
+    curGraph->setBrush(QBrush(QColor(255, 255, 255, 20)));
     if (curTrack->lSections[i] != curTrack->activeSection) {
       if (i == 0) {
         x.append(0.);
