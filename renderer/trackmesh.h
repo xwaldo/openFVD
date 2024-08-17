@@ -76,7 +76,7 @@ public:
   void createQuad(QVector<tracknode_t> &list, glm::vec3 P1, glm::vec3 P2,
                   glm::vec3 P3, glm::vec3 P4);
   void createQuad(QVector<meshnode_t> &list, glm::vec3 P1, glm::vec3 P2,
-                  glm::vec3 P3, glm::vec3 P4); 
+                  glm::vec3 P3, glm::vec3 P4);
   void create3dsQuad(QVector<float> *_vertices, QVector<unsigned int> *_indices,
                      glm::vec3 P1, glm::vec3 P2, glm::vec3 P3, glm::vec3 P4);
   int createShadowTriangle(QVector<meshnode_t> &list, glm::vec3 P1,
