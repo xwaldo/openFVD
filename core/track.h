@@ -41,13 +41,13 @@ class trackHandler;
 enum trackStyle {
   generic = 0,
   genericflat,
+  box,
+  doublespine,
   smallflat,
   arrow,
   bm,
   gci,
   intamin,
-  box,
-  doublespine,
   mack,
   rmc,
   vekoma
