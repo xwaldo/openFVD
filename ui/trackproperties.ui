@@ -346,7 +346,17 @@
         </item>
         <item>
          <property name="text">
-          <string>Mack</string>
+          <string>Arrow</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>B&amp;M</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>GCI</string>
          </property>
         </item>
         <item>
@@ -361,12 +371,12 @@
         </item>
         <item>
          <property name="text">
-          <string>B&amp;M</string>
+          <string>Double Spine</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Vekoma</string>
+          <string>Mack</string>
          </property>
         </item>
         <item>
@@ -376,17 +386,7 @@
         </item>
         <item>
          <property name="text">
-          <string>GCI</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Arrow</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Double Spine</string>
+          <string>Vekoma</string>
          </property>
         </item>
        </widget>

@@ -42,15 +42,15 @@ enum trackStyle {
   generic,
   genericflat,
   smallflat,
-  mack,
+  arrow,
+  bm,
+  gci,
   intamin,
   box,
-  bm,
-  vekoma,
-  rmc,
-  gci,
-  arrow,
   doublespine,
+  mack,
+  rmc,
+  vekoma,
 };
 
 class track {
