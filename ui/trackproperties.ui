@@ -366,6 +366,11 @@
         </item>
         <item>
          <property name="text">
+          <string>B&amp;M [New]</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Vekoma</string>
          </property>
         </item>

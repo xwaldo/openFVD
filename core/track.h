@@ -46,6 +46,7 @@ enum trackStyle {
   intamin,
   box,
   bm,
+  newbm,
   vekoma,
   rmc,
   gci,
