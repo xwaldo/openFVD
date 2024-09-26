@@ -62,10 +62,10 @@ public:
                  float radiusx, float y, float x, bool smooth = true);
   void createBox(QVector<tracknode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
                  glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r, glm::vec3 P2r,
-                 glm::vec3 P3r, glm::vec3 P4r);
+                 glm::vec3 P3r, glm::vec3 P4r, bool hollow = true);
   void createBox(QVector<meshnode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
                  glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r, glm::vec3 P2r,
-                 glm::vec3 P3r, glm::vec3 P4r);
+                 glm::vec3 P3r, glm::vec3 P4r, bool hollow = true);
   int createShadowBox(QVector<meshnode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
                       glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r,
                       glm::vec3 P2r, glm::vec3 P3r, glm::vec3 P4r);

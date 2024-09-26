@@ -44,9 +44,11 @@ enum trackStyle {
   box,
   doublespine,
   smallflat,
-  triangle,
   arrow,
   bm,
+  gci,
+  intamin,
+  mack,
   rmc,
   vekoma
 };
@@ -55,7 +57,7 @@ class track {
 public:
   track();
   track(trackHandler *_parent, glm::vec3 startPos, float startYaw,
-        float heartLine = 0.0, float gauge = 1.0);
+        float heartLine = 0.0, float gauge = 1.0, bool useGauge = false);
   ~track();
   void removeSection(int index);
   void removeSection(section *fromSection);
@@ -101,10 +103,12 @@ public:
   float startPitch;
 
   section *activeSection;
+
   float fHeart;
   float fGauge;
   float fFriction;
   float fResistance;
+  bool useGauge;
   QList<section *> lSections;
 
   optionsMenu *mOptions;

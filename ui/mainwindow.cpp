@@ -195,9 +195,16 @@ void MainWindow::loadProject(QString fileName) {
 void MainWindow::on_actionLoad_triggered() {
   QString fileName;
   glView->paintMode = false;
+
+#ifdef Q_OS_LINUX
   fileName = QFileDialog::getOpenFileName(
       this, "open FVD Data", "", "FVD Data(*.fvd);;Backed Up FVD Data(*.bak)",
       nullptr, QFileDialog::DontUseNativeDialog);
+#else
+  fileName = QFileDialog::getOpenFileName(
+      this, "open FVD Data", "", "FVD Data(*.fvd);;Backed Up FVD Data(*.bak)",
+      0, 0);
+#endif
 
   if (fileName.isEmpty()) {
     glView->paintMode = true;
@@ -267,9 +274,14 @@ void MainWindow::on_actionSave_As_triggered() {
   if (glView->moveMode) {
     return;
   }
+#ifdef Q_OS_LINUX
   QString fileName = QFileDialog::getSaveFileName(
       this, tr("Save File"), "", tr("FVD Data (*.fvd)"), nullptr,
       QFileDialog::DontUseNativeDialog);
+#else
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+                                                  tr("FVD Data (*.fvd)"));
+#endif
 
   if (!fileName.endsWith(".fvd") && !fileName.isEmpty()) {
     fileName.append(".fvd");

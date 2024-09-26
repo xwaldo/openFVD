@@ -186,6 +186,12 @@ void TrackProperties::on_buttonBox_accepted() {
     curTrack->mMesh->buildMeshes(0);
     curTrack->trackData->hasChanged = true;
   }
+
+  if (curTrack->trackData->useGauge != ui->useGaugeCheckbox->isChecked()) {
+    curTrack->trackData->useGauge = ui->useGaugeCheckbox->isChecked();
+    curTrack->mMesh->buildMeshes(0);
+    curTrack->trackData->hasChanged = true;
+  }
 }
 
 void TrackProperties::on_buttonBox_rejected() { return; }
@@ -209,6 +215,7 @@ void TrackProperties::openForTrack(trackHandler *_curTrack) {
 
     ui->drawBox->setCurrentIndex(curTrack->trackData->drawHeartline);
     ui->styleBox->setCurrentIndex(curTrack->trackData->style);
+    ui->useGaugeCheckbox->setChecked(curTrack->trackData->useGauge);
   }
   this->show();
 }
