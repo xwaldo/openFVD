@@ -61,8 +61,8 @@ projectWidget::projectWidget(QWidget *parent)
   phantomChanges = false;
 
   grdTexSize = 440;
-  stl1Color = QColor(140, 140, 140);
-  stl2Color = QColor(233, 250, 0);
+  stl1Color = QColor(80, 80, 80);
+  stl2Color = QColor(140, 140, 140);
 
   properties = new TrackProperties(gloParent);
 

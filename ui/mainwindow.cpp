@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
   // set up all sub widgets etc
   project = ui->projectTab;
   currentFileName.clear();
-  this->setWindowTitle(QString("FVD++ - unsaved Work"));
+  this->setWindowTitle(QString("FVD++ 0.8a [020325] - unsaved Work"));
 
   // set up GL frame
   if (mOptions->glPolicy == 1) {
@@ -155,7 +155,7 @@ void MainWindow::on_actionExportAs_triggered() {
 
 void MainWindow::on_actionNew_triggered() {
   currentFileName.clear();
-  this->setWindowTitle(QString("FVD++ - unsaved Work"));
+  this->setWindowTitle(QString("FVD++ 0.8a [020325] - unsaved Work"));
   ui->projectTab->init();
 }
 
@@ -189,7 +189,7 @@ void MainWindow::loadProject(QString fileName) {
   glView->paintMode = true;
 
   delete gott;
-  this->setWindowTitle(QString("FVD++ - " + currentFileName));
+  this->setWindowTitle(QString("FVD++ 0.8a [020325] - " + currentFileName));
 }
 
 void MainWindow::on_actionLoad_triggered() {
@@ -236,7 +236,7 @@ void MainWindow::on_actionLoad_triggered() {
   glView->paintMode = true;
 
   delete gott;
-  this->setWindowTitle(QString("FVD++ - " + currentFileName));
+  this->setWindowTitle(QString("FVD++ 0.8a [020325] - " + currentFileName));
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -254,7 +254,7 @@ void MainWindow::on_actionSave_triggered() {
   ui->statusBar->showMessage(output, 5000);
 
   delete gott;
-  this->setWindowTitle(QString("FVD++ - " + currentFileName));
+  this->setWindowTitle(QString("FVD++ 0.8a [020325] - " + currentFileName));
 }
 
 void MainWindow::backupSave() {
@@ -265,7 +265,7 @@ void MainWindow::backupSave() {
                           ui->projectTab, this);
   gott->doSave();
   delete gott;
-  this->setWindowTitle(QString("FVD++ - " + currentFileName));
+  this->setWindowTitle(QString("FVD++ 0.8a [020325] - " + currentFileName));
   showMessage(
       QString("Executed autosave to ").append(currentFileName).append(".bak"));
 }
@@ -296,7 +296,7 @@ void MainWindow::on_actionSave_As_triggered() {
   showMessage(output);
 
   delete gott;
-  this->setWindowTitle(QString("FVD++ - " + currentFileName));
+  this->setWindowTitle(QString("FVD++ 0.8a [020325] - " + currentFileName));
 }
 
 void MainWindow::on_actionQuit_triggered() { this->close(); }
