@@ -28,3 +28,4 @@
 # qt crap
 *.pro.user
 *.user
+/build/

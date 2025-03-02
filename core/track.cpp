@@ -36,7 +36,7 @@ extern glViewWidget *glView;
 track::track() {}
 
 track::track(trackHandler *_parent, glm::vec3 startPos, float startYaw,
-             float heartLine, float gauge) {
+             float heartLine, float gauge, bool useGauge) {
   this->anchorNode = new mnode(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0, 0, -1),
                                0., 10.f, 1., 0.);
   this->startPos = startPos;
@@ -49,6 +49,7 @@ track::track(trackHandler *_parent, glm::vec3 startPos, float startYaw,
                         F_G * anchorNode->fPosHearty(0.9 * heartLine);
   this->fHeart = heartLine;
   this->fGauge = gauge;
+  this->useGauge = useGauge;
   fFriction = 0.03f;
   fResistance = 2e-5;
   hasChanged = true;
@@ -1166,6 +1167,7 @@ QString track::saveTrack(fstream &file, trackWidget *_widget) {
   writeBytes(&file, (const char *)&fFriction, sizeof(float));
   writeBytes(&file, (const char *)&fResistance, sizeof(float));
 
+  writeBytes(&file, (const char *)&useGauge, sizeof(bool));
   writeBytes(&file, (const char *)&drawTrack, sizeof(bool));
   writeBytes(&file, (const char *)&drawHeartline, sizeof(int));
   writeBytes(&file, (const char *)&style, sizeof(int));
@@ -1212,6 +1214,7 @@ QString track::loadTrack(fstream &file, trackWidget *_widget) {
   fFriction = readFloat(&file);
   fResistance = readFloat(&file);
 
+  useGauge = readBool(&file);
   drawTrack = readBool(&file);
   drawHeartline = readInt(&file);
   style = (enum trackStyle)readInt(&file);

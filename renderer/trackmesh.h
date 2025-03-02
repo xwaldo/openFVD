@@ -62,10 +62,10 @@ public:
                  float radiusx, float y, float x, bool smooth = true);
   void createBox(QVector<tracknode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
                  glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r, glm::vec3 P2r,
-                 glm::vec3 P3r, glm::vec3 P4r);
+                 glm::vec3 P3r, glm::vec3 P4r, bool hollow = true);
   void createBox(QVector<meshnode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
                  glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r, glm::vec3 P2r,
-                 glm::vec3 P3r, glm::vec3 P4r);
+                 glm::vec3 P3r, glm::vec3 P4r, bool hollow = true);
   int createShadowBox(QVector<meshnode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
                       glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r,
                       glm::vec3 P2r, glm::vec3 P3r, glm::vec3 P4r);
@@ -76,7 +76,7 @@ public:
   void createQuad(QVector<tracknode_t> &list, glm::vec3 P1, glm::vec3 P2,
                   glm::vec3 P3, glm::vec3 P4);
   void createQuad(QVector<meshnode_t> &list, glm::vec3 P1, glm::vec3 P2,
-                  glm::vec3 P3, glm::vec3 P4);
+                  glm::vec3 P3, glm::vec3 P4); 
   void create3dsQuad(QVector<float> *_vertices, QVector<unsigned int> *_indices,
                      glm::vec3 P1, glm::vec3 P2, glm::vec3 P3, glm::vec3 P4);
   int createShadowTriangle(QVector<meshnode_t> &list, glm::vec3 P1,
