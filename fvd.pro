@@ -70,7 +70,6 @@ SOURCES += main.cpp\
     ui/qcustomplot.cpp \
     ui/projectwidget.cpp \
     ui/optionsmenu.cpp \
-    ui/objectexporter.cpp \
     ui/mytreewidget.cpp \
     ui/myqdoublespinbox.cpp \
     ui/mainwindow.cpp \
@@ -114,7 +113,6 @@ HEADERS += core/undohandler.h \
     ui/qcustomplot.h \
     ui/projectwidget.h \
     ui/optionsmenu.h \
-    ui/objectexporter.h \
     ui/mytreewidget.h \
     ui/myqdoublespinbox.h \
     ui/mainwindow.h \
@@ -133,7 +131,6 @@ FORMS += ui/transitionwidget.ui \
     ui/smoothui.ui \
     ui/projectwidget.ui \
     ui/optionsmenu.ui \
-    ui/objectexporter.ui \
     ui/mainwindow.ui \
     ui/importui.ui \
     ui/graphwidget.ui \
