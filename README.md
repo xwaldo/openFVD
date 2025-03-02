@@ -1,10 +1,10 @@
 # open FVD++ v0.8(?) #
 
-Stephan (Lenny) Alt, 2012-2016, alt.stephan@web.de
+Fork of openFVD, originally created by Stephan (Lenny) Alt et al., 2012-2016, alt.stephan@web.de
 
 # Introduction #
 
-Trying to bring FVD++ back from the brink (maybe).
+Veia is trying to bring FVD++ back from the brink.
 
 # Housekeeping #
 
