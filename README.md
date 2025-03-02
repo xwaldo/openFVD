@@ -4,7 +4,15 @@ Fork of openFVD, originally created by Stephan (Lenny) Alt et al., 2012-2016, al
 
 # Introduction #
 
-Veia is trying to bring FVD++ back from the brink.
+FVD++ revival.
+
+# Compilation on Windows #
+- Download [Qt 5.14.2](https://download.qt.io/archive/qt/5.14/5.14.2/) for Windows, which should include Qt Creator.
+- Download [glm-0.9.5.1](https://github.com/g-truc/glm/releases/download/0.9.5.1/glm-0.9.5.1.zip)
+- Download [glew-1.12.0-win32](https://sourceforge.net/projects/glew/files/glew/1.12.0/glew-1.12.0-win32.zip/download)
+- Extract both libraries.
+- Change: `INCLUDEPATH += "path\to\fvd_deps\glew-1.12.0\include"`, `INCLUDEPATH += "path\to\fvd_deps\glm", `LIBS += "path\to\fvd_deps\glew-1.12.0\lib\Release\x64\glew32.lib"` in fvd_win.pro.
+- Compile using the `MinGW-64` kit in Qt Creator.
 
 # Housekeeping #
 
