@@ -177,9 +177,14 @@ void projectWidget::importNLTrack() {
 }
 
 void projectWidget::importNoLimitsCSV() {
+#ifdef Q_OS_LINUX
   QString fileName = QFileDialog::getOpenFileName(
       gloParent, "Open NL2 CSV", "", "NL2 CSV(*.csv)", nullptr,
       QFileDialog::DontUseNativeDialog);
+#else
+  QString fileName = QFileDialog::getOpenFileName(gloParent, "Open NL2 CSV", "",
+                                                  "NL2 CSV(*.csv)");
+#endif
 
   if (!fileName.isEmpty()) {
     newEmptyTrack();
@@ -432,9 +437,14 @@ QString projectWidget::loadProject(std::fstream &file) {
 }
 
 void projectWidget::on_texChooser_released() {
+#ifdef Q_OS_LINUX
   QString fileName = QFileDialog::getOpenFileName(
       gloParent, "Open Texture", "", "PNG Image (*.png)", nullptr,
       QFileDialog::DontUseNativeDialog);
+#else
+  QString fileName = QFileDialog::getOpenFileName(gloParent, "Open Texture", "",
+                                                  "PNG Image (*.png)");
+#endif
   QString relPath = QDir::current().relativeFilePath(fileName);
 
   if (fileName.isEmpty()) {
@@ -481,9 +491,15 @@ void projectWidget::onstlColorPicker2_received() {
 }
 
 void projectWidget::on_stlChooser1_released() {
+#ifdef Q_OS_LINUX
   QString fileName = QFileDialog::getOpenFileName(
       gloParent, "Open .stl file", "", "STL (*.stl)", nullptr,
       QFileDialog::DontUseNativeDialog);
+#else
+  QString fileName = QFileDialog::getOpenFileName(gloParent, "Open .stl file",
+                                                  "", "STL (*.stl)");
+#endif
+
   QString relPath = QDir::current().relativeFilePath(fileName);
 
   if (fileName.isEmpty()) {
@@ -502,9 +518,14 @@ void projectWidget::on_stlChooser1_released() {
 }
 
 void projectWidget::on_stlChooser2_released() {
+#ifdef Q_OS_LINUX
   QString fileName = QFileDialog::getOpenFileName(
       gloParent, "Open .stl file", "", "STL (*.stl)", nullptr,
       QFileDialog::DontUseNativeDialog);
+#else
+  QString fileName = QFileDialog::getOpenFileName(gloParent, "Open .stl file",
+                                                  "", "STL (*.stl)");
+#endif
   QString relPath = QDir::current().relativeFilePath(fileName);
 
   if (fileName.isEmpty()) {

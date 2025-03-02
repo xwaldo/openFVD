@@ -187,12 +187,11 @@ void TrackProperties::on_buttonBox_accepted() {
     curTrack->trackData->hasChanged = true;
   }
 
-  if(curTrack->trackData->useGauge != ui->useGaugeCheckbox->isChecked()) {
+  if (curTrack->trackData->useGauge != ui->useGaugeCheckbox->isChecked()) {
     curTrack->trackData->useGauge = ui->useGaugeCheckbox->isChecked();
     curTrack->mMesh->buildMeshes(0);
     curTrack->trackData->hasChanged = true;
   }
-
 }
 
 void TrackProperties::on_buttonBox_rejected() { return; }

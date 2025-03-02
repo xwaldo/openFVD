@@ -274,9 +274,15 @@ void exportUi::on_buttonBox_accepted() {
   } else {
     filter = QString("NL Element (*.nlelem)");
   }
+
+#ifdef Q_OS_LINUX
   fileName =
       QFileDialog::getSaveFileName(gloParent, "Save File", ".", filter, nullptr,
                                    QFileDialog::DontUseNativeDialog);
+#else
+  fileName =
+      QFileDialog::getSaveFileName(gloParent, "Save File", ".", filter, 0, 0);
+#endif
 
   switch (ui->exportTypeBox->currentIndex()) {
   case 0:
