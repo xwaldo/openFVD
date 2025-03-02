@@ -17,8 +17,6 @@ uniform vec3 eyePos;
 out vec4 screenCoord;
 out vec3 baryCoord;
 
-// todo: clean this up
-// todo: remove auv, buv
 void main(void) {
   // generate barycentric coordinates based on vertex ID
   if (gl_VertexID % 3 == 0) {

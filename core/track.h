@@ -39,21 +39,23 @@ class smoothHandler;
 class trackHandler;
 
 enum trackStyle {
-  generic = 0, // 0,5m
-  genericflat, // 0,7m
-  vekoma,      // 0,6m
-  bm,          // 0,6m
-  triangle,    // 0,5m
-  box,         // 0,5m
-  smallflat,   // 0,5m
-  doublespine
+  generic = 0,
+  genericflat,
+  box,
+  doublespine,
+  smallflat,
+  triangle,
+  arrow,
+  bm,
+  rmc,
+  vekoma
 };
 
 class track {
 public:
   track();
   track(trackHandler *_parent, glm::vec3 startPos, float startYaw,
-        float heartLine = 0.0);
+        float heartLine = 0.0, float gauge = 1.0);
   ~track();
   void removeSection(int index);
   void removeSection(section *fromSection);
@@ -100,6 +102,7 @@ public:
 
   section *activeSection;
   float fHeart;
+  float fGauge;
   float fFriction;
   float fResistance;
   QList<section *> lSections;

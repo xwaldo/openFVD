@@ -14,16 +14,20 @@ Veia is trying to bring FVD++ back from the brink.
 # Changelog #
 
 v0.8 Alpha:
-- two .stl meshes are loadable
-- background texture can be resized
 - added backtrace to fvd.log
-- added export nl2 csv
+- added export nl2 .csv
+- added new track types (Vekoma and RMC; credit: xwaldo)
+- added track gauge modifier
+- background texture can be resized
 - fixed displacement of csv track after project load
 - fixed issue with poor performance on lNode.deleteAt()
-- fixed nl2 csv import
-- readd protections: zero velocity in geometric sections
+- fixed nl2 .csv import
 - readd protections: zero velocity in forced sections
+- readd protections: zero velocity in geometric sections
+- removed export to .3ds
 - removed support for macOS
+- removed track wireframe
+- two .stl meshes are loadable
 
 v0.79:
 - added nolimits 2 csv import

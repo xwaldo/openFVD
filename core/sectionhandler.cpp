@@ -29,7 +29,7 @@ sectionHandler::sectionHandler(track *_track, enum secType _type, int _id) {
     name = QString("");
     sectionData = NULL;
   } else {
-    name = QString("unnamed");
+    name = QString("Unnamed");
     _track->newSection(type, id - 1);
     sectionData = _track->lSections[id - 1];
     sectionData->sName = name;

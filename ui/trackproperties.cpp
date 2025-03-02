@@ -47,6 +47,8 @@ void TrackProperties::on_frictionBox_valueChanged(double) {}
 
 void TrackProperties::on_heartlineBox_valueChanged(double) {}
 
+void TrackProperties::on_gaugeBox_valueChanged(double) {}
+
 void TrackProperties::on_defaultColorButton_released() {
   colorPicker->setCurrentColor(curTrack->trackColors[0]);
   colorPicker->open(this, SLOT(ondefaultColor_received()));
@@ -179,8 +181,8 @@ void TrackProperties::on_buttonBox_accepted() {
     curTrack->trackData->hasChanged = true;
   }
 
-  if (curTrack->mMesh->isWireframe != ui->wireframeBox->isChecked()) {
-    curTrack->mMesh->isWireframe = ui->wireframeBox->isChecked();
+  if (curTrack->trackData->fGauge != ui->gaugeBox->value()) {
+    curTrack->trackData->fGauge = ui->gaugeBox->value();
     curTrack->mMesh->buildMeshes(0);
     curTrack->trackData->hasChanged = true;
   }
@@ -193,8 +195,9 @@ void TrackProperties::openForTrack(trackHandler *_curTrack) {
     curTrack = _curTrack;
 
     ui->frictionBox->setValue(curTrack->trackData->fFriction);
-    ui->heartlineBox->setValue(curTrack->trackData->fHeart);
     ui->resistanceBox->setValue(curTrack->trackData->fResistance * 1e5);
+    ui->gaugeBox->setValue(curTrack->trackData->fGauge);
+    ui->heartlineBox->setValue(curTrack->trackData->fHeart);
 
     QPalette palette = ui->defaultColorButton->palette();
     palette.setColor(QPalette::ButtonText, curTrack->trackColors[0]);
@@ -206,7 +209,6 @@ void TrackProperties::openForTrack(trackHandler *_curTrack) {
 
     ui->drawBox->setCurrentIndex(curTrack->trackData->drawHeartline);
     ui->styleBox->setCurrentIndex(curTrack->trackData->style);
-    ui->wireframeBox->setChecked(curTrack->mMesh->isWireframe);
   }
   this->show();
 }

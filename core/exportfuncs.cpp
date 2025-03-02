@@ -197,3 +197,23 @@ void writeToExportFile(std::fstream *file, QList<bezier_t *> &bezList) {
     writeNulls(file, 7);         // were 5
   }
 }
+
+void writeToExportFileAscii(std::fstream *file, QList<bezier_t *> &bezList) {
+  for (int i = 0; i < bezList.size(); ++i) {
+    writeFloats(file, bezList[i]->Kp1.x);
+    writeFloats(file, bezList[i]->Kp1.y);
+    writeFloats(file, bezList[i]->Kp1.z);
+
+    writeFloats(file, bezList[i]->Kp2.x);
+    writeFloats(file, bezList[i]->Kp2.y);
+    writeFloats(file, bezList[i]->Kp2.z);
+
+    writeFloats(file, bezList[i]->P1.x);
+    writeFloats(file, bezList[i]->P1.y);
+    writeFloats(file, bezList[i]->P1.z);
+
+    writeFloats(file, bezList[i]->roll);
+
+    *file << std::endl;
+  }
+}

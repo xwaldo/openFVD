@@ -162,17 +162,17 @@
          <widget class="QComboBox" name="shadowModeBox">
           <item>
            <property name="text">
-            <string>low</string>
+            <string>Low</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>medium</string>
+            <string>Medium</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>high</string>
+            <string>High</string>
            </property>
           </item>
          </widget>
@@ -355,17 +355,17 @@
          <widget class="QComboBox" name="glBox">
           <item>
            <property name="text">
-            <string>auto detect</string>
+            <string>Auto detect</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>use OpenGL 2/1</string>
+            <string>Use OpenGL 2/1</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>force OpenGL 3</string>
+            <string>Force OpenGL 3</string>
            </property>
           </item>
          </widget>
@@ -374,22 +374,22 @@
          <widget class="QComboBox" name="meshQualityBox">
           <item>
            <property name="text">
-            <string>low</string>
+            <string>Low</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>medium</string>
+            <string>Medium</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>high</string>
+            <string>High</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>extreme</string>
+            <string>Extreme</string>
            </property>
           </item>
          </widget>

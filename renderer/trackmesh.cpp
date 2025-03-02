@@ -74,16 +74,6 @@ trackMesh::~trackMesh() {
   }
 }
 
-/*enum trackStyle {
-    generic = 0,    // 0,5m
-    genericflat,    // 0,7m
-    vekoma,         // 0,6m
-    bm,             // 0,6m
-    triangle,       // 0,5m
-    box,            // 0,5m
-    small           // 0,5m
-};*/
-
 #define APPEND_TRACK_NODE(name)                                                \
   {                                                                            \
     name.append(nextPos.x);                                                    \
@@ -135,12 +125,6 @@ void trackMesh::appendTrackNode(QVector<tracknode_t> &list, float _u,
           : 0.f;
 
   list.append(temp);
-}
-
-void trackMesh::append3dsNode(QVector<float> *_vertices) {
-  _vertices->append(nextPos.x);
-  _vertices->append(nextPos.y);
-  _vertices->append(nextPos.z);
 }
 
 void trackMesh::appendSupportNode(QVector<tracknode_t> &list, float _u,
@@ -246,7 +230,6 @@ int trackMesh::createPipes(QVector<tracknode_t> &list,
   }
 
   // get shadow vertices
-
   glm::vec3 P1, P2, P3, P4;
   for (int i = 0; i < posList.size(); ++i) {
     for (int p = 0; p < numPipes; ++p) {
@@ -310,75 +293,6 @@ int trackMesh::createPipes(QVector<tracknode_t> &list,
       appendMeshNode(railshadows);
       nextPos = P4;
       appendMeshNode(railshadows);
-    }
-  }
-
-  return count;
-}
-
-int trackMesh::create3dsPipes(QVector<float> *_vertices,
-                              QList<pipeoption_t> &options) {
-  int count = 0;
-  float angle;
-  int numPipes = options.size();
-
-  for (int p = 0; p < numPipes; ++p) {
-    if (!secList.isEmpty()) {
-      j = posList[0];
-      curSection = trackData->lSections[secList[0]];
-      curNode = &curSection->lNodes[j];
-      nextNorm = -curNode->vDirHeart(-options[p].offset.y);
-      nextPos = curNode->vRelPos(options[p].offset.y, options[p].offset.x);
-      nextNode = trackData->getNumPoints(curSection) + j;
-      append3dsNode(_vertices);
-    }
-
-    for (int pos = 0; pos < posList.size(); ++pos) {
-      // float r = 0.5f*(options[p].radius.y+options[p].radius.x);
-      for (int i = 0; i < options[p].edges; ++i) {
-        if (options[p].smooth)
-          angle = i * 360.f / options[p].edges - 180.f / options[p].edges;
-        else
-          angle = (i / 2) * 720.f / options[p].edges - 360.f / options[p].edges;
-
-        j = posList[pos];
-        curSection = trackData->lSections[secList[pos]];
-        curNode = &curSection->lNodes[j];
-
-        nextNorm = -(float)(options[p].radius.y * cos(angle * F_PI / 180)) *
-                       curNode->vNorm +
-                   (float)(options[p].radius.x * sin(angle * F_PI / 180)) *
-                       curNode->vLatHeart(-options[p].offset.y);
-        nextPos = curNode->vRelPos(options[p].offset.y, options[p].offset.x) +
-                  nextNorm;
-        nextNode = trackData->getNumPoints(curSection) + j;
-        if (options[p].smooth) {
-          nextNorm = glm::normalize(nextNorm);
-          append3dsNode(_vertices);
-        } else {
-          nextNorm =
-              -(float)(options[p].radius.y *
-                       cos(angle * F_PI / 180 + ((i % 2) * 2 - 1) * F_PI_4)) *
-                  curNode->vNorm +
-              (float)(options[p].radius.x *
-                      sin(angle * F_PI / 180 + ((i % 2) * 2 - 1) * F_PI_4)) *
-                  curNode->vLatHeart(-options[p].offset.y);
-          nextNorm = glm::normalize(nextNorm);
-          append3dsNode(_vertices);
-        }
-      }
-    }
-
-    // last node here
-    if (!posList.isEmpty()) {
-      j = posList.last();
-      curSection = trackData->lSections[secList.last()];
-      curNode = &curSection->lNodes[j];
-
-      nextNorm = curNode->vDirHeart(-options[p].offset.y);
-      nextPos = curNode->vRelPos(options[p].offset.y, options[p].offset.x);
-      nextNode = trackData->getNumPoints(curSection) + j;
-      append3dsNode(_vertices);
     }
   }
 
@@ -682,35 +596,6 @@ void trackMesh::createQuad(QVector<tracknode_t> &list, glm::vec3 P1,
   appendTrackNode(list, glm::dot(P4, base1), glm::dot(P4, base2));
 }
 
-void trackMesh::create3dsQuad(QVector<float> *_vertices,
-                              QVector<unsigned int> *_indices, glm::vec3 P1,
-                              glm::vec3 P2, glm::vec3 P3, glm::vec3 P4) {
-  int offset = _vertices->size() / 3;
-  _vertices->append(P1.x);
-  _vertices->append(P1.y);
-  _vertices->append(P1.z);
-
-  _vertices->append(P2.x);
-  _vertices->append(P2.y);
-  _vertices->append(P2.z);
-
-  _vertices->append(P3.x);
-  _vertices->append(P3.y);
-  _vertices->append(P3.z);
-
-  _vertices->append(P4.x);
-  _vertices->append(P4.y);
-  _vertices->append(P4.z);
-
-  _indices->append(offset + 0);
-  _indices->append(offset + 2);
-  _indices->append(offset + 1);
-
-  _indices->append(offset + 0);
-  _indices->append(offset + 3);
-  _indices->append(offset + 2);
-}
-
 void trackMesh::createQuad(QVector<meshnode_t> &list, glm::vec3 P1,
                            glm::vec3 P2, glm::vec3 P3, glm::vec3 P4) {
   nextNorm = glm::normalize(glm::cross(P1 - P4, P1 - P2));
@@ -764,64 +649,6 @@ void trackMesh::createBox(QVector<tracknode_t> &list, glm::vec3 P1l,
   createQuad(list, P2l, P4l, P4r, P2r);
   createQuad(list, P4l, P3l, P3r, P4r);
   createQuad(list, P3l, P1l, P1r, P3r);
-}
-
-void trackMesh::create3dsBox(QVector<float> *_vertices,
-                             QVector<unsigned int> *_indices, glm::vec3 P1l,
-                             glm::vec3 P2l, glm::vec3 P3l, glm::vec3 P4l,
-                             glm::vec3 P1r, glm::vec3 P2r, glm::vec3 P3r,
-                             glm::vec3 P4r) {
-  int offset = _vertices->size() / 3;
-  _vertices->append(P1l.x);
-  _vertices->append(P1l.y);
-  _vertices->append(P1l.z);
-
-  _vertices->append(P2l.x);
-  _vertices->append(P2l.y);
-  _vertices->append(P2l.z);
-
-  _vertices->append(P4l.x);
-  _vertices->append(P4l.y);
-  _vertices->append(P4l.z);
-
-  _vertices->append(P3l.x);
-  _vertices->append(P3l.y);
-  _vertices->append(P3l.z);
-
-  _vertices->append(P1r.x);
-  _vertices->append(P1r.y);
-  _vertices->append(P1r.z);
-
-  _vertices->append(P2r.x);
-  _vertices->append(P2r.y);
-  _vertices->append(P2r.z);
-
-  _vertices->append(P4r.x);
-  _vertices->append(P4r.y);
-  _vertices->append(P4r.z);
-
-  _vertices->append(P3r.x);
-  _vertices->append(P3r.y);
-  _vertices->append(P3r.z);
-
-  const int l = 0;
-  const int r = 4;
-  QList<int> points;
-  for (int i = 0; i < 5; ++i) {
-    points.append(offset + i % 4 + l);
-    points.append(offset + i % 4 + r);
-  }
-  for (int i = 0; i < points.size() - 2; ++i) {
-    if (i % 2) {
-      _indices->append(points[i]);
-      _indices->append(points[i + 2]);
-      _indices->append(points[i + 1]);
-    } else {
-      _indices->append(points[i]);
-      _indices->append(points[i + 1]);
-      _indices->append(points[i + 2]);
-    }
-  }
 }
 
 void trackMesh::createBox(QVector<meshnode_t> &list, glm::vec3 P1l,
@@ -1155,6 +982,9 @@ void trackMesh::buildMeshes(int fromNode) {
   heartlineSize = 0;
   railShadowSize = 0;
 
+  // don't draw cylindrical rails
+  bool ignoreRails = false;
+
   if (fromNode < 0)
     fromNode = 0;
   int fromSection, fromSecI = fromNode;
@@ -1206,2072 +1036,195 @@ void trackMesh::buildMeshes(int fromNode) {
   timer.start();
 
   switch (trackData->style) {
+  // GENERIC
   case generic:
     numRails = 3;
-    railSpacing = 0.5f;
+    railSpacing = trackData->fGauge / 2.0;
     crosstieSpacing = 1.5f;
     spineHeight = 0.30f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    spineSize = 0.22f; // used to be 0.18f
+    spineSize = 0.22f;
     break;
   case genericflat:
     numRails = 2;
-    railSpacing = 0.7f;
+    railSpacing = trackData->fGauge / 2.0;
     crosstieSpacing = 1.4f;
     break;
-  case vekoma:
+  // STYLE
+  case box:
+    numRails = 4;
+    railSpacing = trackData->fGauge / 2.0;
+    crosstieSpacing = 1.0f;
+    spineSize = railWidth;
+    spineHeight = 1.f * (trackData->fHeart < 0 ? -1.f : 1.f);
+    break;
+  case doublespine:
+    numRails = 4;
+    railSpacing = trackData->fGauge / 2.0;
+    crosstieSpacing = 0.3f;
+    spineHeight = 0.3f * (trackData->fHeart < 0 ? -1.f : 1.f);
+    spineSize = 0.18f;
+    break;
+  case smallflat:
+    numRails = 2;
+    railSpacing = trackData->fGauge / 2.0;
+    crosstieSpacing = 0.8f;
+    break;
+  case triangle:
     numRails = 3;
-    railSpacing = 0.60;
+    railSpacing = trackData->fGauge / 2.0;
+    crosstieSpacing = 1.0f;
+    spineSize = railWidth;
+    spineHeight = 0.75f * (trackData->fHeart < 0 ? -1.f : 1.f);
+    break;
+  // MANUFACTURER
+  case arrow:
+    numRails = 3;
+    railSpacing = trackData->fGauge / 2.0;
     crosstieSpacing = 1.5f;
     spineHeight = 0.85f * (trackData->fHeart < 0 ? -1.f : 1.f);
     spineSize = 0.22f;
     break;
   case bm:
     numRails = 3;
-    railSpacing = 0.6f;
+    railSpacing = trackData->fGauge / 2.0;
     crosstieSpacing = 1.45f;
     spineHeight = 0.5f * (trackData->fHeart < 0 ? -1.f : 1.f);
     spineSize = 0.26f * 1.4101f;
     break;
-  case triangle:
-    numRails = 3;
-    railSpacing = 0.5f;
-    crosstieSpacing = 1.0f;
-    spineSize = railWidth;
-    spineHeight = 0.75f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    break;
-  case box:
-    numRails = 4;
-    railSpacing = 0.5f;
-    crosstieSpacing = 1.0f;
-    spineSize = railWidth;
-    spineHeight = 1.f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    break;
-  case smallflat:
-    numRails = 2;
-    railSpacing = 0.5f;
-    crosstieSpacing = 0.8f;
-    break;
-  case doublespine:
-    numRails = 4;
-    railSpacing = 0.5f;
-    crosstieSpacing = 0.3f;
-    spineHeight = 0.3f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    spineSize = 0.18f;
-    break;
-  }
-
-  if (!isWireframe) {
-    // delete obsolete railnodes
-    int railNode;
-
-    if (rails.size() && fromNode >= rails.last().node) {
-      fromNode = rails.last().node - 5;
-    }
-
-    for (railNode = 0;
-         railNode < rails.size() && rails[railNode].node < fromNode; ++railNode)
-      ;
-    rails.remove(railNode, rails.size() - railNode);
-
-    railNode = rails.size() ? rails.last().node : 0;
-
-    if (railNode == 0) {
-      rails.clear();
-    }
-
-    int i;
-
-    trackData->getSecNode(railNode, &j, &i);
-
-    if (i < 0)
-      i = 0;
-
-    if (i == j && j == 0)
-      distFromLastNode = 1.f;
-
-    for (; i < trackData->lSections.size(); i++) {
-      curSection = trackData->lSections[i];
-      for (; j < curSection->lNodes.size(); ++j) {
-        if (i != 0 && j == 1)
-          distFromLastNode = 1.f;
-        float angle = curSection->lNodes[(j)].fFlexion();
-        angle /= angleNodeDist;
-        angle = std::min(std::max(1.f / minNodeDist, angle), 1.f / maxNodeDist);
-        angle *= curSection->lNodes[(j)].fDistFromLast;
-        ;
-        distFromLastNode += angle;
-        if (distFromLastNode >= 1.f || j == curSection->lNodes.size() - 1) {
-          if (distFromLastNode >= 1.f) {
-            distFromLastNode -= 1.f;
-          } else {
-            distFromLastNode = 0.f;
-          }
-          if (rails.size() == 0 ||
-              rails.last().node != trackData->getNumPoints(curSection) + j) {
-            posList.append(j);
-            secList.append(i);
-          }
-        }
-      }
-      for (j = 0; j < curSection->supList.size(); j += 2) {
-        glm::vec3 P1 = curSection->supList[j];
-        glm::vec3 P2 = curSection->supList[j + 1];
-
-        createSupport(rendersupports, 12, 0.2f, 0.2f, P1, P2, true);
-        supportsSize += 1;
-
-        // supportsSize += 3;
-        // nextPos = curSection->supList[j];
-        // appendMeshNode(supports);
-      }
-      j = 0;
-    }
-
-    int jSize = posList.size();
-    rails.reserve(jSize * 12);
-    // railshadows.reserve(jSize*12*8);
-    // qDebug("Generated Points: %d", jSize);
-
-    while (nodeList.size() && nodeList.last() >= fromNode)
-      nodeList.removeLast();
-
-    for (railNode = 0;
-         railNode < railshadows.size() && railshadows[railNode].node < fromNode;
-         ++railNode)
-      ;
-    railshadows.remove(railNode, railshadows.size() - railNode);
-
-    for (railNode = 0;
-         railNode < heartline.size() && heartline[railNode].node < fromNode;
-         ++railNode)
-      ;
-    heartline.remove(railNode, heartline.size() - railNode);
-
-    for (int i = 0; i < jSize; ++i) {
-      j = posList[i];
-      section *curSection = trackData->lSections[secList[i]];
-      curNode = &curSection->lNodes[j];
-
-      heartlineSize += 1;
-
-      nextPos = curNode->vPos;
-      nextNode = trackData->getNumPoints(curSection) + j;
-      if (nodeList.isEmpty() ||
-          (nodeList.size() && nodeList.last() != nextNode))
-        nodeList.append(nextNode);
-      if (!heartline.size() || nextNode != heartline.last().node)
-        appendMeshNode(heartline);
-    }
-
-    options.clear();
-    pipeoption_t temp;
-    temp.edges = 12;
-    temp.offset = glm::vec2(-railSpacing, -trackData->fHeart);
-    temp.radius = glm::vec2(railWidth, railWidth);
-    temp.smooth = true;
-    options.append(temp);
-    temp.offset.x *= -1;
-    options.append(temp);
-
-    switch (trackData->style) {
-    case bm:
-      temp.smooth = false;
-      temp.edges = 8;
-      temp.offset.x = 0;
-      temp.offset.y = -trackData->fHeart - spineHeight;
-      temp.radius.x = spineSize;
-      temp.radius.y = spineSize;
-      options.append(temp);
-      // createPipe(rails, 4, spineSize*1.2, spineSize,
-      // -trackData->fHeart-spineHeight, 0, false); createPipe(rails, 4, 0, 0,
-      // -trackData->fHeart-spineHeight, 0, false); createPipe(rails, 4, 0, 0,
-      // -trackData->fHeart-spineHeight, 0, false);
-      break;
-    case generic:
-    case vekoma:
-      temp.edges = 24;
-    case triangle:
-      temp.offset.x = 0;
-      temp.offset.y = -trackData->fHeart - spineHeight;
-      temp.radius.x = spineSize;
-      temp.radius.y = spineSize;
-      options.append(temp);
-      // createPipe(rails, 12, spineSize, spineSize,
-      // -trackData->fHeart-spineHeight, 0);
-      break;
-    case box:
-      temp.offset.x = -railSpacing;
-      temp.offset.y = -trackData->fHeart - spineHeight;
-      temp.radius.x = spineSize;
-      temp.radius.y = spineSize;
-      options.append(temp);
-      temp.offset.x = railSpacing;
-      options.append(temp);
-      // createPipe(rails, 12, spineSize, spineSize,
-      // -trackData->fHeart-spineHeight, -railSpacing); createPipe(rails, 12,
-      // spineSize, spineSize, -trackData->fHeart-spineHeight, railSpacing);
-      break;
-    case genericflat:
-    case smallflat:
-      break;
-    case doublespine:
-      temp.edges = 24;
-      temp.offset.x = 0;
-      temp.offset.y = -trackData->fHeart - spineHeight;
-      temp.radius.x = spineSize;
-      temp.radius.y = spineSize;
-      options.append(temp);
-      temp.offset.y = -trackData->fHeart - 0.45f - spineHeight;
-      options.append(temp);
-    }
-
-    createPipes(rails, options);
-
-    createIndices();
-
-    /*trackVertexSize += createPipe(rails, 12, railWidth, railWidth,
-    -trackData->fHeart, -railSpacing); createPipe(rails, 12, railWidth,
-    railWidth, -trackData->fHeart, railSpacing); switch(trackData->style)
-    {
-    case bm:
-        createPipe(rails, 4, spineSize*1.2, spineSize,
-    -trackData->fHeart-spineHeight, 0, false); createPipe(rails, 4, 0, 0,
-    -trackData->fHeart-spineHeight, 0, false); createPipe(rails, 4, 0, 0,
-    -trackData->fHeart-spineHeight, 0, false); break; case generic: case vekoma:
-    case triangle:
-        createPipe(rails, 12, spineSize, spineSize,
-    -trackData->fHeart-spineHeight, 0); break; case box: createPipe(rails, 12,
-    spineSize, spineSize, -trackData->fHeart-spineHeight, -railSpacing);
-        createPipe(rails, 12, spineSize, spineSize,
-    -trackData->fHeart-spineHeight, railSpacing); break; case genericflat: case
-    smallflat: break;
-    }*/
-
-    // crossties
-
-    int iCrosstie = 0, iCrossShadow = 0;
-    while (crossties.size() > iCrosstie && fromNode > crossties[iCrosstie].node)
-      iCrosstie++; // cycle through crossties until we have something to change
-    while (crosstieshadows.size() > iCrossShadow &&
-           fromNode > crosstieshadows[iCrossShadow].node)
-      iCrossShadow++;
-
-    if (iCrosstie == 0)
-      distFromLastNode = crosstieSpacing / 2.f;
-    else
-      distFromLastNode =
-          trackData->getPoint(fromNode)->fTotalLength -
-          trackData->getPoint(crossties[iCrosstie - 1].node)->fTotalLength;
-
-    crossties.remove(iCrosstie, crossties.size() - iCrosstie);
-    crosstieshadows.remove(iCrossShadow, crosstieshadows.size() - iCrossShadow);
-
-    curNode = NULL;
-
-    posList.clear();
-    secList.clear();
-
-    j = fromSecI;
-    for (int i = fromSection; i < trackData->lSections.size(); i++) {
-      section *curSection = trackData->lSections[i];
-      for (; j < curSection->lNodes.size(); ++j) {
-        distFromLastNode += curSection->lNodes[(j)].fDistFromLast;
-        if (distFromLastNode >= crosstieSpacing) {
-          distFromLastNode -= crosstieSpacing;
-          posList.append(j);
-          secList.append(i);
-        }
-      }
-      j = 0;
-    }
-
-    jSize = posList.size();
-
-    int offset = 0;
-    switch (trackData->style) {
-    case generic:
-      offset = crossties.size() / 48;
-      break;
-    case genericflat:
-      offset = (crossties.size() + 24) / 48;
-      break;
-    case vekoma:
-      offset = crossties.size() / 228;
-      break;
-    case bm:
-      offset =
-          6 * (crossties.size() / 444) + ((crossties.size() % 444) - 12) / 72;
-      break;
-    case triangle:
-      offset = (crossties.size() + 72) / 120;
-      break;
-    case box:
-      offset = (crossties.size() + 96) / 192;
-      break;
-    case smallflat:
-      offset = crossties.size() / 24;
-      break;
-    case doublespine:
-      offset =
-          2 * (crossties.size() / (4 * 24)) + ((crossties.size() / 24) % 4) / 3;
-      break;
-    }
-
-    if (crossties.size())
-      curNode = trackData->getPoint(crossties.last().node);
-
-#define XS (0.06f)
-#define S (0.08f)
-#define M (0.10f)
-#define L (0.12f)
-#define XL (0.14f)
-#define XXL (0.16f)
-
-#define BOX_INWARD (0.14f)
-#define BOX_DIAG0 (0.08f)
-#define BOX_DIAG1 (0.18f)
-#define BOX_WIDTH (0.05f)
-
-    for (int i = 0; i < jSize; ++i) {
-      int index = i + offset;
-      j = posList[i];
-      curSection = trackData->lSections[secList[i]];
-      lastNode = curNode;
-      curNode = &curSection->lNodes[j];
-      nextNode = trackData->getNumPoints(curSection) + j;
-
-      /* CROSSTIE GENERATION */
-      glm::vec3 P1, P2, P3, P4, P5, P6, P7, P8;
-      float mysign = fabs(spineHeight) / spineHeight;
-      switch (trackData->style) {
-      case generic:
-        P1 = curNode->vRelPos(-trackData->fHeart + 0.1 * railWidth * mysign,
-                              -railSpacing, -0.15 * spineHeight);
-        P2 = curNode->vRelPos(-trackData->fHeart + 0.1 * railWidth * mysign,
-                              -railSpacing, 0.15 * spineHeight);
-        P3 = curNode->vRelPos(-trackData->fHeart, -railSpacing,
-                              -0.15 * spineHeight);
-        P4 = curNode->vRelPos(-trackData->fHeart, -railSpacing,
-                              0.15 * spineHeight);
-        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.15, 0,
-                              -0.15f); //-0.35*spineHeight);
-        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.15, 0,
-                              0.15f); // 0.35*spineHeight);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  0.9 * spineSize * mysign,
-                              0, -0.15f); // -0.15*spineHeight);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  0.9 * spineSize * mysign,
-                              0, 0.15f); // 0.15*spineHeight);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.15, 0,
-                              -0.15f); //-0.35*spineHeight);
-        P2 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.15, 0,
-                              0.15f); // 0.35*spineHeight);
-        P3 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  0.9 * spineSize * mysign,
-                              0, -0.15f); //, -0.15*spineHeight);
-        P4 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  0.9 * spineSize * mysign,
-                              0, 0.15f); //, 0.15*spineHeight);
-        P5 = curNode->vRelPos(-trackData->fHeart + 0.1 * railWidth * mysign,
-                              railSpacing, -0.15 * spineHeight);
-        P6 = curNode->vRelPos(-trackData->fHeart + 0.1 * railWidth * mysign,
-                              railSpacing, 0.15 * spineHeight);
-        P7 = curNode->vRelPos(-trackData->fHeart, railSpacing,
-                              -0.15 * spineHeight);
-        P8 = curNode->vRelPos(-trackData->fHeart, railSpacing,
-                              0.15 * spineHeight);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        break;
-      case genericflat:
-        if (index % 6 == 0) {
-          P1 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.8 : 1.0),
-                                -railSpacing, -M);
-          P2 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.8 : 1.0),
-                                -railSpacing, M);
-          P3 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1.0 : 0.8),
-                                -railSpacing, -M);
-          P4 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1.0 : 0.8),
-                                -railSpacing, M);
-          P5 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.8 : 1.0),
-                                railSpacing, -M);
-          P6 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.8 : 1.0),
-                                railSpacing, M);
-          P7 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1.0 : 0.8),
-                                railSpacing, -M);
-          P8 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1.0 : 0.8),
-                                railSpacing, M);
-
-        } else {
-          P1 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.5 : 1),
-                                -railSpacing, -0.03);
-          P2 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.5 : 1),
-                                -railSpacing, 0.03);
-          P3 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1 : 0.5),
-                                -railSpacing, -0.03);
-          P4 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1 : 0.5),
-                                -railSpacing, 0.03);
-          P5 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.5 : 1),
-                                railSpacing, -0.03);
-          P6 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.5 : 1),
-                                railSpacing, 0.03);
-          P7 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1 : 0.5),
-                                railSpacing, -0.03);
-          P8 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1 : 0.5),
-                                railSpacing, 0.03);
-        }
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        if (index) {
-          P1 = lastNode->vRelPos(-trackData->fHeart +
-                                     railWidth * (mysign > 0 ? 0.5 : 1),
-                                 -railSpacing + 0.13, 0.03);
-          P2 = lastNode->vRelPos(-trackData->fHeart +
-                                     railWidth * (mysign > 0 ? 0.5 : 1),
-                                 -railSpacing + 0.07, 0.03);
-          P3 = lastNode->vRelPos(-trackData->fHeart -
-                                     railWidth * (mysign > 0 ? 1 : 0.5),
-                                 -railSpacing + 0.13, 0.03);
-          P4 = lastNode->vRelPos(-trackData->fHeart -
-                                     railWidth * (mysign > 0 ? 1 : 0.5),
-                                 -railSpacing + 0.07, 0.03);
-          P5 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.5 : 1),
-                                railSpacing - 0.07, -0.03);
-          P6 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.5 : 1),
-                                railSpacing - 0.13, -0.03);
-          P7 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1 : 0.5),
-                                railSpacing - 0.07, -0.03);
-          P8 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 1 : 0.5),
-                                railSpacing - 0.13, -0.03);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        }
-        break;
-      case vekoma:
-        P1 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              -railSpacing - 0.5 * railWidth, -0.05f);
-        P2 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              -railSpacing - 0.5 * railWidth, +0.05f);
-        P3 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              -railSpacing - 0.5 * railWidth, -0.05f);
-        P4 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              -railSpacing - 0.5 * railWidth, +0.05f);
-        P5 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              -1.2 * railSpacing, -0.05f);
-        P6 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              -1.2 * railSpacing, +0.05f);
-        P7 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              -1.2 * railSpacing, -0.05f);
-        P8 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              -1.2 * railSpacing, +0.05f);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              railSpacing + 0.5 * railWidth, -0.05f);
-        P2 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              railSpacing + 0.5 * railWidth, +0.05f);
-        P3 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              railSpacing + 0.5 * railWidth, -0.05f);
-        P4 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              railSpacing + 0.5 * railWidth, +0.05f);
-        P5 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              1.2 * railSpacing, -0.05f);
-        P6 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              1.2 * railSpacing, +0.05f);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              1.2 * railSpacing, -0.05f);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              1.2 * railSpacing, +0.05f);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              -1.2 * railSpacing, -0.05f);
-        P2 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              -1.2 * railSpacing, +0.05f);
-        P3 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              -1.3 * railSpacing, -0.05f);
-        P4 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              -1.3 * railSpacing, +0.05f);
-        P5 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                              -1.2 * railSpacing, -0.05f);
-        P6 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                              -1.2 * railSpacing, +0.05f);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                              -1.3 * railSpacing, -0.05f);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                              -1.3 * railSpacing, +0.05f);
-
-        createQuad(crossties, P2, P1, P3, P4);
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              1.3 * railSpacing, -0.05f);
-        P2 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                              1.3 * railSpacing, +0.05f);
-        P3 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              1.2 * railSpacing, -0.05f);
-        P4 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              1.2 * railSpacing, +0.05f);
-        P5 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                              1.3 * railSpacing, -0.05f);
-        P6 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                              1.3 * railSpacing, +0.05f);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                              1.2 * railSpacing, -0.05f);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                              1.2 * railSpacing, +0.05f);
-
-        createQuad(crossties, P2, P1, P3, P4);
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                              -1.3 * railSpacing, -0.05f);
-        P2 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                              -1.3 * railSpacing, +0.05f);
-        P3 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                              -1.3 * railSpacing, -0.05f);
-        P4 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                              -1.3 * railSpacing, +0.05f);
-        P5 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                              1.3 * railSpacing, -0.05f);
-        P6 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                              1.3 * railSpacing, +0.05f);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                              1.3 * railSpacing, -0.05f);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                              1.3 * railSpacing, +0.05f);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              -0.9 * railSpacing, -0.07f);
-        P2 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              -0.9 * railSpacing, +0.07f);
-        P3 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                              -0.9 * railSpacing, -0.07f);
-        P4 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                              -0.9 * railSpacing, +0.07f);
-        P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              -1.1 * spineSize, -0.07f);
-        P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              -1.1 * spineSize, +0.07f);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
-                                  0.5 * mysign * (spineSize - 0.05),
-                              -1.1 * spineSize, -0.07f);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
-                                  0.5 * mysign * (spineSize - 0.05),
-                              -1.1 * spineSize, +0.07f);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = P5;
-        P2 = P6;
-        P3 = P7;
-        P4 = P8;
-        P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              1.1 * spineSize, -0.07f);
-        P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              1.1 * spineSize, +0.07f);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
-                                  0.5 * mysign * (spineSize - 0.05),
-                              1.1 * spineSize, -0.07f);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
-                                  0.5 * mysign * (spineSize - 0.05),
-                              1.1 * spineSize, +0.07f);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = P5;
-        P2 = P6;
-        P3 = P7;
-        P4 = P8;
-        P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              0.9 * railSpacing, -0.07f);
-        P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              0.9 * railSpacing, +0.07f);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                              0.9 * railSpacing, -0.07f);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                              0.9 * railSpacing, +0.07f);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              0.9 * railSpacing, -0.07f);
-        P2 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              -0.9 * railSpacing, -0.07f);
-        P3 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                              0.9 * railSpacing, -0.07f);
-        P4 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                              -0.9 * railSpacing, -0.07f);
-        P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              0.9 * railSpacing, +0.07f);
-        P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                              -0.9 * railSpacing, +0.07f);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                              0.9 * railSpacing, +0.07f);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                              -0.9 * railSpacing, +0.07f);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        break;
-      case bm:
-        P1 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              -railSpacing, -0.05f * mysign);
-        P2 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              -railSpacing, 0.05f * mysign);
-        P3 =
-            curNode->vRelPos(-trackData->fHeart, -railSpacing, -0.05f * mysign);
-        P4 = curNode->vRelPos(-trackData->fHeart, -railSpacing, 0.05f * mysign);
-        P5 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              -0.3 * spineSize, -0.05f * mysign);
-        P6 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              -0.3 * spineSize, 0.05f * mysign);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  0.25 * 0.71 * spineSize * mysign,
-                              -0.71 * spineSize, -0.05f * mysign);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  0.25 * 0.71 * spineSize * mysign,
-                              -0.71 * spineSize, 0.05f * mysign);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        if (index % 6 == 0) {
-          P1 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                                -0.71 * spineSize * 1.3, -0.05f * mysign);
-          P2 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                                -0.71 * spineSize * 1.3, 0.05f * mysign);
-          P3 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    1.3 * 0.71 * spineSize * mysign,
-                                -0.71 * spineSize * 1.3, -0.05f * mysign);
-          P4 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    1.3 * 0.71 * spineSize * mysign,
-                                -0.71 * spineSize * 1.3, 0.05f * mysign);
-          P5 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                                0.71 * spineSize * 1.3, -0.05f * mysign);
-          P6 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                                0.71 * spineSize * 1.3, 0.05f * mysign);
-          P7 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    1.3 * 0.71 * spineSize * mysign,
-                                0.71 * spineSize * 1.3, -0.05f * mysign);
-          P8 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    1.3 * 0.71 * spineSize * mysign,
-                                0.71 * spineSize * 1.3, 0.05f * mysign);
-
-          createQuad(crossties, P2, P1, P3, P4);
-          createQuad(crossties, P5, P6, P8, P7);
-        } else {
-          P1 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                                -0.71 * spineSize, -0.05f * mysign);
-          P2 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                                -0.71 * spineSize, 0.05f * mysign);
-          P3 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                    0.25 * 0.71 * spineSize * mysign,
-                                -0.71 * spineSize, -0.05f * mysign);
-          P4 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                    0.25 * 0.71 * spineSize * mysign,
-                                -0.71 * spineSize, 0.05f * mysign);
-          P5 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                                0.71 * spineSize, -0.05f * mysign);
-          P6 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                                0.71 * spineSize, 0.05f * mysign);
-          P7 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                    0.25 * 0.71 * spineSize * mysign,
-                                0.71 * spineSize, -0.05f * mysign);
-          P8 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                    0.25 * 0.71 * spineSize * mysign,
-                                0.71 * spineSize, 0.05f * mysign);
-        }
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              0.3 * spineSize, -0.05f * mysign);
-        P2 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              0.3 * spineSize, 0.05f * mysign);
-        P3 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  0.25 * 0.71 * spineSize * mysign,
-                              0.71 * spineSize, -0.05f * mysign);
-        P4 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  0.25 * 0.71 * spineSize * mysign,
-                              0.71 * spineSize, 0.05f * mysign);
-        P5 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              railSpacing, -0.05f * mysign);
-        P6 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                              railSpacing, 0.05f * mysign);
-        P7 = curNode->vRelPos(-trackData->fHeart, railSpacing, -0.05f * mysign);
-        P8 = curNode->vRelPos(-trackData->fHeart, railSpacing, 0.05f * mysign);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        break;
-      case triangle:
-        P1 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.6 : 0.8),
-                              -railSpacing, -BOX_WIDTH);
-        P2 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.6 : 0.8),
-                              -railSpacing, BOX_WIDTH);
-        P3 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.8 : 0.6),
-                              -railSpacing, -BOX_WIDTH);
-        P4 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.8 : 0.6),
-                              -railSpacing, BOX_WIDTH);
-        P5 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.6 : 0.8),
-                              railSpacing, -BOX_WIDTH);
-        P6 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.6 : 0.8),
-                              railSpacing, BOX_WIDTH);
-        P7 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.8 : 0.6),
-                              railSpacing, -BOX_WIDTH);
-        P8 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.8 : 0.6),
-                              railSpacing, BOX_WIDTH);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-        P2 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), BOX_WIDTH);
-        P3 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-        P4 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), BOX_WIDTH);
-        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              mysign * railWidth / 2, -BOX_WIDTH);
-        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              mysign * railWidth / 2, BOX_WIDTH);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -mysign * railWidth / 2, -BOX_WIDTH);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -mysign * railWidth / 2, BOX_WIDTH);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-        P2 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD + railWidth / 2), BOX_WIDTH);
-        P3 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-        P4 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD - railWidth / 2), BOX_WIDTH);
-        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              mysign * railWidth / 2, -BOX_WIDTH);
-        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              mysign * railWidth / 2, BOX_WIDTH);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -mysign * railWidth / 2, -BOX_WIDTH);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -mysign * railWidth / 2, BOX_WIDTH);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        if (index && index % 2) {
-          P1 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (-railSpacing + BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-          P2 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (-railSpacing + BOX_INWARD + railWidth / 2), BOX_WIDTH);
-          P3 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (-railSpacing + BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-          P4 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (-railSpacing + BOX_INWARD - railWidth / 2), BOX_WIDTH);
-          P5 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                 mysign * railWidth / 2, -BOX_WIDTH);
-          P6 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                 mysign * railWidth / 2, BOX_WIDTH);
-          P7 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                 -mysign * railWidth / 2, -BOX_WIDTH);
-          P8 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                 -mysign * railWidth / 2, BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (railSpacing - BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-          P2 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (railSpacing - BOX_INWARD + railWidth / 2), BOX_WIDTH);
-          P3 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (railSpacing - BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-          P4 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (railSpacing - BOX_INWARD - railWidth / 2), BOX_WIDTH);
-          P5 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                 mysign * railWidth / 2, -BOX_WIDTH);
-          P6 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                 mysign * railWidth / 2, BOX_WIDTH);
-          P7 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                 -mysign * railWidth / 2, -BOX_WIDTH);
-          P8 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                 -mysign * railWidth / 2, BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        } else if (index && index % 2 == 0) {
-          P1 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (-railSpacing + BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-          P2 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (-railSpacing + BOX_INWARD + railWidth / 2), BOX_WIDTH);
-          P3 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (-railSpacing + BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-          P4 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (-railSpacing + BOX_INWARD - railWidth / 2), BOX_WIDTH);
-          P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                mysign * railWidth / 2, -BOX_WIDTH);
-          P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                mysign * railWidth / 2, BOX_WIDTH);
-          P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                -mysign * railWidth / 2, -BOX_WIDTH);
-          P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                -mysign * railWidth / 2, BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (railSpacing - BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-          P2 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (railSpacing - BOX_INWARD + railWidth / 2), BOX_WIDTH);
-          P3 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (railSpacing - BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-          P4 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.8,
-              mysign * (railSpacing - BOX_INWARD - railWidth / 2), BOX_WIDTH);
-          P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                mysign * railWidth / 2, -BOX_WIDTH);
-          P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                mysign * railWidth / 2, BOX_WIDTH);
-          P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                -mysign * railWidth / 2, -BOX_WIDTH);
-          P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                -mysign * railWidth / 2, BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        }
-
-        if (index) {
-          P1 = lastNode->vRelPos(-trackData->fHeart +
-                                     railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                 -railSpacing + BOX_DIAG1, BOX_WIDTH);
-          P2 = lastNode->vRelPos(-trackData->fHeart +
-                                     railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                 -railSpacing + BOX_DIAG0, BOX_WIDTH);
-          P3 = lastNode->vRelPos(-trackData->fHeart -
-                                     railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                 -railSpacing + BOX_DIAG1, BOX_WIDTH);
-          P4 = lastNode->vRelPos(-trackData->fHeart -
-                                     railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                 -railSpacing + BOX_DIAG0, BOX_WIDTH);
-          P5 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                railSpacing - BOX_DIAG0, -BOX_WIDTH);
-          P6 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                railSpacing - BOX_DIAG1, -BOX_WIDTH);
-          P7 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                railSpacing - BOX_DIAG0, -BOX_WIDTH);
-          P8 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                railSpacing - BOX_DIAG1, -BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        }
-        break;
-      case box:
-        P1 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.6 : 0.8),
-                              -railSpacing, -BOX_WIDTH);
-        P2 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.6 : 0.8),
-                              -railSpacing, BOX_WIDTH);
-        P3 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.8 : 0.6),
-                              -railSpacing, -BOX_WIDTH);
-        P4 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.8 : 0.6),
-                              -railSpacing, BOX_WIDTH);
-        P5 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.6 : 0.8),
-                              railSpacing, -BOX_WIDTH);
-        P6 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.6 : 0.8),
-                              railSpacing, BOX_WIDTH);
-        P7 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.8 : 0.6),
-                              railSpacing, -BOX_WIDTH);
-        P8 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.8 : 0.6),
-                              railSpacing, BOX_WIDTH);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  railWidth * (mysign < 0 ? 0.6 : 0.8),
-                              -railSpacing, -BOX_WIDTH);
-        P2 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  railWidth * (mysign < 0 ? 0.6 : 0.8),
-                              -railSpacing, BOX_WIDTH);
-        P3 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  railWidth * (mysign < 0 ? 0.8 : 0.6),
-                              -railSpacing, -BOX_WIDTH);
-        P4 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  railWidth * (mysign < 0 ? 0.8 : 0.6),
-                              -railSpacing, BOX_WIDTH);
-        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  railWidth * (mysign < 0 ? 0.6 : 0.8),
-                              railSpacing, -BOX_WIDTH);
-        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  railWidth * (mysign < 0 ? 0.6 : 0.8),
-                              railSpacing, BOX_WIDTH);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  railWidth * (mysign < 0 ? 0.8 : 0.6),
-                              railSpacing, -BOX_WIDTH);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  railWidth * (mysign < 0 ? 0.8 : 0.6),
-                              railSpacing, BOX_WIDTH);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.6,
-            mysign * (-railSpacing + BOX_INWARD + railWidth * 0.7), -BOX_WIDTH);
-        P2 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.6,
-            mysign * (-railSpacing + BOX_INWARD + railWidth * 0.7), BOX_WIDTH);
-        P3 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.6,
-            mysign * (-railSpacing + BOX_INWARD - railWidth * 0.7), -BOX_WIDTH);
-        P4 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.6,
-            mysign * (-railSpacing + BOX_INWARD - railWidth * 0.7), BOX_WIDTH);
-        P5 = curNode->vRelPos(
-            -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-            mysign * (-railSpacing + BOX_INWARD + railWidth * 0.7), -BOX_WIDTH);
-        P6 = curNode->vRelPos(
-            -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-            mysign * (-railSpacing + BOX_INWARD + railWidth * 0.7), BOX_WIDTH);
-        P7 = curNode->vRelPos(
-            -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-            mysign * (-railSpacing + BOX_INWARD - railWidth * 0.7), -BOX_WIDTH);
-        P8 = curNode->vRelPos(
-            -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-            mysign * (-railSpacing + BOX_INWARD - railWidth * 0.7), BOX_WIDTH);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.6,
-                              -mysign *
-                                  (-railSpacing + BOX_INWARD - railWidth * 0.7),
-                              -BOX_WIDTH);
-        P2 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.6,
-            -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.7), BOX_WIDTH);
-        P3 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.6,
-                              -mysign *
-                                  (-railSpacing + BOX_INWARD + railWidth * 0.7),
-                              -BOX_WIDTH);
-        P4 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.6,
-            -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.7), BOX_WIDTH);
-        P5 = curNode->vRelPos(
-            -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-            -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.7),
-            -BOX_WIDTH);
-        P6 = curNode->vRelPos(
-            -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-            -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.7), BOX_WIDTH);
-        P7 = curNode->vRelPos(
-            -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-            -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.7),
-            -BOX_WIDTH);
-        P8 = curNode->vRelPos(
-            -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-            -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.7), BOX_WIDTH);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        if (index && index % 2) {
-          P1 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              -BOX_WIDTH);
-          P2 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              BOX_WIDTH);
-          P3 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              -BOX_WIDTH);
-          P4 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              BOX_WIDTH);
-          P5 = lastNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              -BOX_WIDTH);
-          P6 = lastNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              BOX_WIDTH);
-          P7 = lastNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              -BOX_WIDTH);
-          P8 = lastNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              -BOX_WIDTH);
-          P2 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              BOX_WIDTH);
-          P3 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              -BOX_WIDTH);
-          P4 = curNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              BOX_WIDTH);
-          P5 = lastNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              -BOX_WIDTH);
-          P6 = lastNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              BOX_WIDTH);
-          P7 = lastNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              -BOX_WIDTH);
-          P8 = lastNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                -railSpacing + BOX_DIAG1, -BOX_WIDTH);
-          P2 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                -railSpacing + BOX_DIAG0, -BOX_WIDTH);
-          P3 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                -railSpacing + BOX_DIAG1, -BOX_WIDTH);
-          P4 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                -railSpacing + BOX_DIAG0, -BOX_WIDTH);
-          P5 = lastNode->vRelPos(-trackData->fHeart -
-                                     railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                 railSpacing - BOX_DIAG0, BOX_WIDTH);
-          P6 = lastNode->vRelPos(-trackData->fHeart -
-                                     railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                 railSpacing - BOX_DIAG1, BOX_WIDTH);
-          P7 = lastNode->vRelPos(-trackData->fHeart +
-                                     railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                 railSpacing - BOX_DIAG0, BOX_WIDTH);
-          P8 = lastNode->vRelPos(-trackData->fHeart +
-                                     railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                 railSpacing - BOX_DIAG1, BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    railWidth * (mysign < 0 ? 0.6 : 0.4),
-                                -railSpacing + BOX_DIAG1, -BOX_WIDTH);
-          P2 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    railWidth * (mysign < 0 ? 0.6 : 0.4),
-                                -railSpacing + BOX_DIAG0, -BOX_WIDTH);
-          P3 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                    railWidth * (mysign < 0 ? 0.4 : 0.6),
-                                -railSpacing + BOX_DIAG1, -BOX_WIDTH);
-          P4 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                    railWidth * (mysign < 0 ? 0.4 : 0.6),
-                                -railSpacing + BOX_DIAG0, -BOX_WIDTH);
-          P5 = lastNode->vRelPos(-trackData->fHeart - spineHeight -
-                                     railWidth * (mysign < 0 ? 0.6 : 0.4),
-                                 railSpacing - BOX_DIAG0, BOX_WIDTH);
-          P6 = lastNode->vRelPos(-trackData->fHeart - spineHeight -
-                                     railWidth * (mysign < 0 ? 0.6 : 0.4),
-                                 railSpacing - BOX_DIAG1, BOX_WIDTH);
-          P7 = lastNode->vRelPos(-trackData->fHeart - spineHeight +
-                                     railWidth * (mysign < 0 ? 0.4 : 0.6),
-                                 railSpacing - BOX_DIAG0, BOX_WIDTH);
-          P8 = lastNode->vRelPos(-trackData->fHeart - spineHeight +
-                                     railWidth * (mysign < 0 ? 0.4 : 0.6),
-                                 railSpacing - BOX_DIAG1, BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        } else if (index && (index % 2 == 0)) {
-          P1 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              -BOX_WIDTH);
-          P2 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              BOX_WIDTH);
-          P3 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              -BOX_WIDTH);
-          P4 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              BOX_WIDTH);
-          P5 = curNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              -BOX_WIDTH);
-          P6 = curNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              BOX_WIDTH);
-          P7 = curNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              -BOX_WIDTH);
-          P8 = curNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              -BOX_WIDTH);
-          P2 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              BOX_WIDTH);
-          P3 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              -BOX_WIDTH);
-          P4 = lastNode->vRelPos(
-              -trackData->fHeart - mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              BOX_WIDTH);
-          P5 = curNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              -BOX_WIDTH);
-          P6 = curNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5),
-              BOX_WIDTH);
-          P7 = curNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              -BOX_WIDTH);
-          P8 = curNode->vRelPos(
-              -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
-              -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5),
-              BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = lastNode->vRelPos(-trackData->fHeart +
-                                     railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                 -railSpacing + BOX_DIAG1, BOX_WIDTH);
-          P2 = lastNode->vRelPos(-trackData->fHeart +
-                                     railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                 -railSpacing + BOX_DIAG0, BOX_WIDTH);
-          P3 = lastNode->vRelPos(-trackData->fHeart -
-                                     railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                 -railSpacing + BOX_DIAG1, BOX_WIDTH);
-          P4 = lastNode->vRelPos(-trackData->fHeart -
-                                     railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                 -railSpacing + BOX_DIAG0, BOX_WIDTH);
-          P5 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                railSpacing - BOX_DIAG0, -BOX_WIDTH);
-          P6 = curNode->vRelPos(-trackData->fHeart +
-                                    railWidth * (mysign > 0 ? 0.4 : 0.6),
-                                railSpacing - BOX_DIAG1, -BOX_WIDTH);
-          P7 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                railSpacing - BOX_DIAG0, -BOX_WIDTH);
-          P8 = curNode->vRelPos(-trackData->fHeart -
-                                    railWidth * (mysign > 0 ? 0.6 : 0.4),
-                                railSpacing - BOX_DIAG1, -BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = lastNode->vRelPos(-trackData->fHeart - spineHeight +
-                                     railWidth * (mysign < 0 ? 0.4 : 0.6),
-                                 -railSpacing + BOX_DIAG1, BOX_WIDTH);
-          P2 = lastNode->vRelPos(-trackData->fHeart - spineHeight +
-                                     railWidth * (mysign < 0 ? 0.4 : 0.6),
-                                 -railSpacing + BOX_DIAG0, BOX_WIDTH);
-          P3 = lastNode->vRelPos(-trackData->fHeart - spineHeight -
-                                     railWidth * (mysign < 0 ? 0.6 : 0.4),
-                                 -railSpacing + BOX_DIAG1, BOX_WIDTH);
-          P4 = lastNode->vRelPos(-trackData->fHeart - spineHeight -
-                                     railWidth * (mysign < 0 ? 0.6 : 0.4),
-                                 -railSpacing + BOX_DIAG0, BOX_WIDTH);
-          P5 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                    railWidth * (mysign < 0 ? 0.4 : 0.6),
-                                railSpacing - BOX_DIAG0, -BOX_WIDTH);
-          P6 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                    railWidth * (mysign < 0 ? 0.4 : 0.6),
-                                railSpacing - BOX_DIAG1, -BOX_WIDTH);
-          P7 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    railWidth * (mysign < 0 ? 0.6 : 0.4),
-                                railSpacing - BOX_DIAG0, -BOX_WIDTH);
-          P8 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    railWidth * (mysign < 0 ? 0.6 : 0.4),
-                                railSpacing - BOX_DIAG1, -BOX_WIDTH);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        }
-        break;
-      case smallflat:
-        P1 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.5 : 1),
-                              -railSpacing, -BOX_WIDTH);
-        P2 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.5 : 1),
-                              -railSpacing, BOX_WIDTH);
-        P3 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 1 : 0.5),
-                              -railSpacing, -BOX_WIDTH);
-        P4 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 1 : 0.5),
-                              -railSpacing, BOX_WIDTH);
-        P5 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.5 : 1),
-                              railSpacing, -BOX_WIDTH);
-        P6 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.5 : 1),
-                              railSpacing, BOX_WIDTH);
-        P7 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 1 : 0.5),
-                              railSpacing, -BOX_WIDTH);
-        P8 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 1 : 0.5),
-                              railSpacing, BOX_WIDTH);
-
-        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        break;
-      case doublespine:
-        if (index % 2 == 0) {
-          P1 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
-                                -railSpacing, -0.12 * spineHeight);
-          P2 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
-                                -railSpacing, 0.12 * spineHeight);
-          P3 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
-                                -railSpacing, -0.12 * spineHeight);
-          P4 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
-                                -railSpacing, 0.12 * spineHeight);
-          P5 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
-                                railSpacing, -0.12 * spineHeight);
-          P6 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
-                                railSpacing, 0.12 * spineHeight);
-          P7 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
-                                railSpacing, -0.12 * spineHeight);
-          P8 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
-                                railSpacing, 0.12 * spineHeight);
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
-                                -0.80 * railSpacing, -0.10 * spineHeight);
-          P2 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
-                                -0.80 * railSpacing, 0.10 * spineHeight);
-          P3 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
-                                -0.80 * railSpacing, -0.10 * spineHeight);
-          P4 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
-                                -0.80 * railSpacing, 0.10 * spineHeight);
-          P5 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
-                                -0.20 * spineHeight);
-          P6 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
-                                0.20 * spineHeight);
-          P7 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    0.9 * spineSize * mysign,
-                                0, -0.10 * spineHeight);
-          P8 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    0.9 * spineSize * mysign,
-                                0, 0.10 * spineHeight);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-
-          P1 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
-                                -0.20 * spineHeight);
-          P2 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
-                                0.20 * spineHeight);
-          P3 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    0.9 * spineSize * mysign,
-                                0, -0.10 * spineHeight);
-          P4 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                    0.9 * spineSize * mysign,
-                                0, 0.10 * spineHeight);
-          P5 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
-                                0.80 * railSpacing, -0.10 * spineHeight);
-          P6 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
-                                0.80 * railSpacing, 0.10 * spineHeight);
-          P7 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
-                                0.80 * railSpacing, -0.10 * spineHeight);
-          P8 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
-                                0.80 * railSpacing, 0.10 * spineHeight);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        }
-        if ((index + 3) % 4 == 0) {
-          P1 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                0.65 * spineSize, -0.65 * spineSize);
-          P2 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                0.65 * spineSize, 0.65 * spineSize);
-          P3 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                -0.65 * spineSize, -0.65 * spineSize);
-          P4 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                -0.65 * spineSize, 0.65 * spineSize);
-          P5 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
-                                0.65 * spineSize, -0.65 * spineSize);
-          P6 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
-                                0.65 * spineSize, 0.65 * spineSize);
-          P7 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
-                                -0.65 * spineSize, -0.65 * spineSize);
-          P8 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
-                                -0.65 * spineSize, 0.65 * spineSize);
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        }
-        if ((index + 1) % 4 == 0) {
-          P1 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                0.65 * spineSize, -0.65 * spineSize);
-          P2 = P1;
-          P3 = P1;
-          P4 = P1;
-          P5 = P1;
-          P6 = P1;
-          P7 = P1;
-          P8 = P1;
-
-          createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
-          createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
-        }
-        break;
-      }
-    }
-    mSec = timer.nsecsElapsed() / 1000000.;
-    gloParent->showMessage(
-        QString::number(mSec).append(QString("ms used to build meshes")), 3000);
-  } else // wireframe
-  {
-    int railNode;
-
-    if (rails.size() && fromNode >= rails.last().node) {
-      fromNode = rails.last().node - 5;
-    }
-
-    while (nodeList.size() && nodeList.last() >= fromNode)
-      nodeList.removeLast();
-
-    for (railNode = 0;
-         railNode < rails.size() && rails[railNode].node < fromNode; ++railNode)
-      ;
-    rails.remove(railNode, rails.size() - railNode);
-
-    railNode = rails.size() ? rails.last().node : 0;
-
-    int i;
-
-    trackData->getSecNode(railNode, &j, &i);
-
-    if (i < 0)
-      i = 0;
-    if (i == j && j == 0)
-      distFromLastNode = 1.f;
-
-    for (; i < trackData->lSections.size(); i++) {
-      curSection = trackData->lSections[i];
-      for (; j < curSection->lNodes.size(); ++j) {
-        if (i != 0 && j == 1)
-          distFromLastNode = 1.f;
-        float angle = curSection->lNodes[(j)].fFlexion();
-        angle /= angleNodeDist;
-        angle = std::min(std::max(1.f / minNodeDist, angle), 1.f / maxNodeDist);
-        angle *= curSection->lNodes[(j)].fDistFromLast;
-        ;
-        distFromLastNode += angle;
-        if (distFromLastNode >= 1.f || j == curSection->lNodes.size() - 1) {
-          if (distFromLastNode >= 1.f) {
-            distFromLastNode -= 1.f;
-          } else {
-            distFromLastNode = 0.f;
-          }
-
-          posList.append(j);
-          secList.append(i);
-        }
-      }
-      for (j = 0; j < curSection->supList.size(); j += 2) {
-        glm::vec3 P1 = curSection->supList[j];
-        glm::vec3 P2 = curSection->supList[j + 1];
-
-        nextNorm = glm::vec3(0, 0.5, 0);
-        nextNode = 0;
-        nextPos = P1;
-        appendSupportNode(rendersupports);
-        nextPos = P2;
-        appendSupportNode(rendersupports);
-        // createSupport(rendersupports, 12, 0.2f, 0.2f, P1, P2, true);
-        supportsSize += 1;
-
-        // supportsSize += 3;
-        // nextPos = curSection->supList[j];
-        // appendMeshNode(supports);
-      }
-    }
-
-    for (railNode = 0;
-         railNode < heartline.size() && heartline[railNode].node < fromNode;
-         ++railNode)
-      ;
-    heartline.remove(railNode, heartline.size() - railNode);
-
-    for (int i = 0; i < posList.size(); ++i) {
-      j = posList[i];
-      section *curSection = trackData->lSections[secList[i]];
-      curNode = &curSection->lNodes[j];
-
-      heartlineSize += 1;
-
-      nextPos = curNode->vPos;
-      nextNode = trackData->getNumPoints(curSection) + j;
-      if (!heartline.size() || nextNode != heartline.last().node)
-        appendMeshNode(heartline);
-      if (nodeList.isEmpty() ||
-          (nodeList.size() && nodeList.last() != nextNode))
-        nodeList.append(nextNode);
-    }
-
-    /* RAILS*/
-
-    for (int i = 0; i < posList.size(); ++i) {
-      j = posList[i];
-      curSection = trackData->lSections[secList[i]];
-      curNode = &curSection->lNodes[j];
-
-      nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-      nextNorm = glm::vec3(0, 0.5, 0);
-      nextNode = trackData->getNumPoints(curSection) + j;
-
-      // nextPos.y = -trackData->startPos.y;
-      appendTrackNode(rails);
-      nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing);
-      // nextPos.y = -trackData->startPos.y;
-      appendTrackNode(rails);
-
-      switch (trackData->style) {
-      case generic:
-      case vekoma:
-      case bm:
-      case triangle:
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-        // nextPos.y = -trackData->startPos.y;
-        appendTrackNode(rails);
-        break;
-      case box:
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart - spineHeight, -railSpacing);
-        // nextPos.y = -trackData->startPos.y;
-        appendTrackNode(rails);
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart - spineHeight, railSpacing);
-        // nextPos.y = -trackData->startPos.y;
-        appendTrackNode(rails);
-        break;
-      case genericflat:
-      case smallflat:
-        break;
-      case doublespine:
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-        appendTrackNode(rails);
-        nextPos = curNode->vRelPos(-trackData->fHeart - 0.45f - spineHeight, 0);
-        appendTrackNode(rails);
-        break;
-      }
-    }
-
-    /* CROSSTIE GENERATION */
-
-    int iCrosstie = 0, iCrossShadow = 0;
-    while (crossties.size() > iCrosstie && fromNode > crossties[iCrosstie].node)
-      iCrosstie++; // cycle through crossties until we have something to change
-    while (crosstieshadows.size() > iCrossShadow &&
-           fromNode > crosstieshadows[iCrossShadow].node)
-      iCrossShadow++;
-
-    if (iCrosstie == 0)
-      distFromLastNode = crosstieSpacing / 2.f;
-    else
-      distFromLastNode =
-          trackData->getPoint(fromNode)->fTotalLength -
-          trackData->getPoint(crossties[iCrosstie - 1].node)->fTotalLength;
-
-    crossties.remove(iCrosstie, crossties.size() - iCrosstie);
-    crosstieshadows.remove(iCrossShadow, crosstieshadows.size() - iCrossShadow);
-
-    curNode = NULL;
-
-    posList.clear();
-    secList.clear();
-
-    j = fromSecI;
-    for (int i = fromSection; i < trackData->lSections.size(); i++) {
-      section *curSection = trackData->lSections[i];
-      for (; j < curSection->lNodes.size(); ++j) {
-        distFromLastNode += curSection->lNodes[(j)].fDistFromLast;
-        if (distFromLastNode >= crosstieSpacing) {
-          distFromLastNode -= crosstieSpacing;
-          posList.append(j);
-          secList.append(i);
-        }
-      }
-      j = 0;
-    }
-
-    int offset = 0;
-    switch (trackData->style) {
-    case generic:
-      offset = crossties.size() / 4;
-      break;
-    case genericflat:
-      offset = (crossties.size() + 2) / 4;
-      break;
-    case vekoma:
-      offset = crossties.size() / 10;
-      break;
-    case bm:
-      offset = crossties.size() / 6;
-      break;
-    case triangle:
-      offset = (crossties.size() + 6) / 12;
-      break;
-    case box:
-      offset = (crossties.size() + 8) / 16;
-      break;
-    case smallflat:
-      offset = crossties.size() / 2;
-      break;
-    case doublespine:
-      offset =
-          2 * (crossties.size() / (4 * 2)) + ((crossties.size() / 2) % 4) / 3;
-      break;
-    }
-
-    if (crossties.size())
-      curNode = trackData->getPoint(crossties.last().node);
-
-    for (int i = 0; i < posList.size(); ++i) {
-      int index = i + offset;
-      j = posList[i];
-      curSection = trackData->lSections[secList[i]];
-      lastNode = curNode;
-      curNode = &curSection->lNodes[j];
-
-      nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-      nextNorm = glm::vec3(0, 0.5, 0);
-      nextNode = trackData->getNumPoints(curSection) + j;
-
-      switch (trackData->style) {
-      case generic:
-        nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-        appendTrackNode(crossties);
-
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing);
-        appendTrackNode(crossties);
-        break;
-      case genericflat:
-        nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing);
-        appendTrackNode(crossties);
-
-        if (index) {
-          nextPos = lastNode->vRelPos(-trackData->fHeart, -railSpacing + 0.1f);
-          appendTrackNode(crossties);
-          nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing - 0.1f);
-          appendTrackNode(crossties);
-        }
-        break;
-      case vekoma:
-        nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing - 0.1f);
-        appendTrackNode(crossties);
-
-        nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing - 0.1f);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                   -railSpacing - 0.1f);
-        appendTrackNode(crossties);
-
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                   -railSpacing - 0.1f);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                   railSpacing + 0.1f);
-        appendTrackNode(crossties);
-
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                   railSpacing + 0.1f);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing + 0.1f);
-        appendTrackNode(crossties);
-
-        nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing + 0.1f);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing);
-        appendTrackNode(crossties);
-        break;
-      case bm:
-        nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                   -railSpacing / 3);
-        appendTrackNode(crossties);
-
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                   -railSpacing / 3);
-        appendTrackNode(crossties);
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart - spineHeight, railSpacing / 3);
-        appendTrackNode(crossties);
-
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart - spineHeight, railSpacing / 3);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing);
-        appendTrackNode(crossties);
-        break;
-      case triangle:
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart, -railSpacing + BOX_INWARD);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-        appendTrackNode(crossties);
-
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-        appendTrackNode(crossties);
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart, railSpacing - BOX_INWARD);
-        appendTrackNode(crossties);
-
-        nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing);
-        appendTrackNode(crossties);
-
-        if (index && index % 2) {
-          nextPos =
-              curNode->vRelPos(-trackData->fHeart, -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = lastNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-          appendTrackNode(crossties);
-
-          nextPos =
-              curNode->vRelPos(-trackData->fHeart, +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = lastNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-          appendTrackNode(crossties);
-        } else if (index && index % 2 == 0) {
-          nextPos =
-              lastNode->vRelPos(-trackData->fHeart, -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-          appendTrackNode(crossties);
-
-          nextPos =
-              lastNode->vRelPos(-trackData->fHeart, +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0);
-          appendTrackNode(crossties);
-        }
-
-        if (index) {
-          nextPos =
-              lastNode->vRelPos(-trackData->fHeart, -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos =
-              curNode->vRelPos(-trackData->fHeart, +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-        }
-        break;
-      case box:
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart, -railSpacing + BOX_INWARD);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                   -railSpacing + BOX_INWARD);
-        appendTrackNode(crossties);
-
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart, railSpacing - BOX_INWARD);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                   railSpacing - BOX_INWARD);
-        appendTrackNode(crossties);
-
-        nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing);
-        appendTrackNode(crossties);
-
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart - spineHeight, -railSpacing);
-        appendTrackNode(crossties);
-        nextPos =
-            curNode->vRelPos(-trackData->fHeart - spineHeight, railSpacing);
-        appendTrackNode(crossties);
-
-        if (index && index % 2) {
-          nextPos =
-              curNode->vRelPos(-trackData->fHeart, -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                      -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-
-          nextPos =
-              curNode->vRelPos(-trackData->fHeart, +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                      +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-
-          nextPos =
-              curNode->vRelPos(-trackData->fHeart, -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos =
-              lastNode->vRelPos(-trackData->fHeart, +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                     -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                      +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-        } else if (index && index % 2 == 0) {
-          nextPos =
-              lastNode->vRelPos(-trackData->fHeart, -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                     -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-
-          nextPos =
-              lastNode->vRelPos(-trackData->fHeart, +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                     +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-
-          nextPos =
-              curNode->vRelPos(-trackData->fHeart, +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos =
-              lastNode->vRelPos(-trackData->fHeart, -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                                     +railSpacing - BOX_INWARD);
-          appendTrackNode(crossties);
-          nextPos = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                                      -railSpacing + BOX_INWARD);
-          appendTrackNode(crossties);
-        }
-        break;
-      case smallflat:
-        nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-        appendTrackNode(crossties);
-        nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing);
-        appendTrackNode(crossties);
-        break;
-      case doublespine:
-        if (index % 2 == 0) {
-          nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-          appendTrackNode(crossties);
-          nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing, 0.f);
-          appendTrackNode(crossties);
-
-          nextPos = curNode->vRelPos(-trackData->fHeart, -railSpacing);
-          appendTrackNode(crossties);
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0.f);
-          appendTrackNode(crossties);
-
-          nextPos = curNode->vRelPos(-trackData->fHeart, railSpacing);
-          appendTrackNode(crossties);
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0.f);
-          appendTrackNode(crossties);
-        }
-        if ((index + 3) % 4 == 0) {
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0.f);
-          appendTrackNode(crossties);
-          nextPos =
-              curNode->vRelPos(-trackData->fHeart - 0.45f - spineHeight, 0.f);
-          appendTrackNode(crossties);
-        }
-        if ((index + 1) % 4 == 0) {
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0.f);
-          appendTrackNode(crossties);
-          nextPos = curNode->vRelPos(-trackData->fHeart - spineHeight, 0.f);
-          appendTrackNode(crossties);
-        }
-        break;
-      }
-    }
-  }
-  createIndices();
-  updateVertexArrays();
-  return;
-}
-
-void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
-                         QVector<unsigned int> *_indices,
-                         QVector<unsigned int> *_borders) {
-  posList.clear();
-  secList.clear();
-
-  _borders->append(_vertices->size());
-  _borders->append(_indices->size());
-
-  float crosstieSpacing = 0.f;
-  float meshQuality;
-  switch (gloParent->mOptions->meshQuality) {
-  case 0:
-    meshQuality = 1;
-    break;
-  case 1:
-    meshQuality = 2;
-    break;
-  case 2:
-    meshQuality = 4;
-    break;
-  case 3:
-    meshQuality = 6;
-    break;
-  }
-
-  float minNodeDist = 12.f / (meshQuality),
-        maxNodeDist =
-            0.3f / (meshQuality); // minimal and maximal distance between nodes
-  float angleNodeDist =
-      6.f / (meshQuality); // after x degrees difference force a new node
-
-  float railSpacing = 0.f;
-  float distFromLastNode = 0.f;
-  float spineHeight = (trackData->fHeart < 0 ? -1.f : 1.f);
-  float spineSize = 0.06f;
-
-  float railWidth = 0.065f;
-
-  mnode *lastNode = NULL;
-  curNode = NULL;
-
-  switch (trackData->style) {
-  case generic:
-    numRails = 3;
-    railSpacing = 0.5f;
-    crosstieSpacing = 1.5f;
-    spineHeight = 0.30f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    spineSize = 0.22f; // used to be 0.18f
-    break;
-  case genericflat:
-    numRails = 2;
-    railSpacing = 0.7f;
-    crosstieSpacing = 1.4f;
+  case rmc:
+    numRails = 8;
+    railSpacing = trackData->fGauge / 2.0;
+    crosstieSpacing = 1.25f;
+    ignoreRails = true;
     break;
   case vekoma:
     numRails = 3;
-    railSpacing = 0.60;
-    crosstieSpacing = 1.5f;
-    spineHeight = 0.85f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    spineSize = 0.22f;
-    break;
-  case bm:
-    numRails = 3;
-    railSpacing = 0.6f;
-    crosstieSpacing = 1.45f;
-    spineHeight = 0.5f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    spineSize = 0.26f * 1.4101f;
-    break;
-  case triangle:
-    numRails = 3;
-    railSpacing = 0.5f;
-    crosstieSpacing = 1.0f;
-    spineSize = railWidth;
-    spineHeight = 0.75f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    break;
-  case box:
-    numRails = 4;
-    railSpacing = 0.5f;
-    crosstieSpacing = 1.0f;
-    spineSize = railWidth;
-    spineHeight = 1.f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    break;
-  case smallflat:
-    numRails = 2;
-    railSpacing = 0.5f;
-    crosstieSpacing = 0.8f;
-    break;
-  case doublespine:
-    numRails = 4;
-    railSpacing = 0.5f;
-    crosstieSpacing = 0.3f;
-    spineHeight = 0.3f * (trackData->fHeart < 0 ? -1.f : 1.f);
-    spineSize = 0.18f;
+    railWidth = 0.07f;
+    railSpacing = trackData->fGauge / 2.0;
+    crosstieSpacing = 1.1f;
+    spineHeight = 0.33f * (trackData->fHeart < 0 ? -1.f : 1.f);
+    spineSize = 0.2f;
     break;
   }
 
-  curSection = trackData->lSections[_sec];
-  for (j = 0; j < curSection->lNodes.size(); ++j) {
-    if (j == 0)
-      distFromLastNode = 1.f;
-    float angle = curSection->lNodes[(j)].fFlexion();
-    angle /= angleNodeDist;
-    angle = std::min(std::max(1.f / minNodeDist, angle), 1.f / maxNodeDist);
-    angle *= curSection->lNodes[(j)].fDistFromLast;
+  // delete obsolete railnodes
+  int railNode;
+
+  if (rails.size() && fromNode >= rails.last().node) {
+    fromNode = rails.last().node - 5;
+  }
+
+  for (railNode = 0; railNode < rails.size() && rails[railNode].node < fromNode;
+       ++railNode)
     ;
-    distFromLastNode += angle;
-    if (distFromLastNode >= 1.f || j == curSection->lNodes.size() - 1) {
-      if (distFromLastNode >= 1.f) {
-        distFromLastNode -= 1.f;
-      } else {
-        distFromLastNode = 0.f;
+  rails.remove(railNode, rails.size() - railNode);
+
+  railNode = rails.size() ? rails.last().node : 0;
+
+  if (railNode == 0) {
+    rails.clear();
+  }
+
+  int i;
+
+  trackData->getSecNode(railNode, &j, &i);
+
+  if (i < 0)
+    i = 0;
+
+  if (i == j && j == 0)
+    distFromLastNode = 1.f;
+
+  for (; i < trackData->lSections.size(); i++) {
+    curSection = trackData->lSections[i];
+    for (; j < curSection->lNodes.size(); ++j) {
+      if (i != 0 && j == 1)
+        distFromLastNode = 1.f;
+      float angle = curSection->lNodes[(j)].fFlexion();
+      angle /= angleNodeDist;
+      angle = std::min(std::max(1.f / minNodeDist, angle), 1.f / maxNodeDist);
+      angle *= curSection->lNodes[(j)].fDistFromLast;
+      ;
+      distFromLastNode += angle;
+      if (distFromLastNode >= 1.f || j == curSection->lNodes.size() - 1) {
+        if (distFromLastNode >= 1.f) {
+          distFromLastNode -= 1.f;
+        } else {
+          distFromLastNode = 0.f;
+        }
+        if (rails.size() == 0 ||
+            rails.last().node != trackData->getNumPoints(curSection) + j) {
+          posList.append(j);
+          secList.append(i);
+        }
       }
-      posList.append(j);
-      secList.append(_sec);
     }
+    for (j = 0; j < curSection->supList.size(); j += 2) {
+      glm::vec3 P1 = curSection->supList[j];
+      glm::vec3 P2 = curSection->supList[j + 1];
+
+      createSupport(rendersupports, 12, 0.2f, 0.2f, P1, P2, true);
+      supportsSize += 1;
+
+      // supportsSize += 3;
+      // nextPos = curSection->supList[j];
+      // appendMeshNode(supports);
+    }
+    j = 0;
   }
 
   int jSize = posList.size();
+  rails.reserve(jSize * 12);
+  // railshadows.reserve(jSize*12*8);
+  // qDebug("Generated Points: %d", jSize);
+
+  while (nodeList.size() && nodeList.last() >= fromNode)
+    nodeList.removeLast();
+
+  for (railNode = 0;
+       railNode < railshadows.size() && railshadows[railNode].node < fromNode;
+       ++railNode)
+    ;
+  railshadows.remove(railNode, railshadows.size() - railNode);
+
+  for (railNode = 0;
+       railNode < heartline.size() && heartline[railNode].node < fromNode;
+       ++railNode)
+    ;
+  heartline.remove(railNode, heartline.size() - railNode);
+
+  for (int i = 0; i < jSize; ++i) {
+    j = posList[i];
+    section *curSection = trackData->lSections[secList[i]];
+    curNode = &curSection->lNodes[j];
+
+    heartlineSize += 1;
+
+    nextPos = curNode->vPos;
+    nextNode = trackData->getNumPoints(curSection) + j;
+    if (nodeList.isEmpty() || (nodeList.size() && nodeList.last() != nextNode))
+      nodeList.append(nextNode);
+    if (!heartline.size() || nextNode != heartline.last().node)
+      appendMeshNode(heartline);
+  }
 
   options.clear();
   pipeoption_t temp;
-  temp.edges = 6;
+  temp.edges = 12;
   temp.offset = glm::vec2(-railSpacing, -trackData->fHeart);
   temp.radius = glm::vec2(railWidth, railWidth);
   temp.smooth = true;
-  options.append(temp);
-  temp.offset.x *= -1;
-  options.append(temp);
+
+  if (!ignoreRails) {
+    options.append(temp);
+    temp.offset.x *= -1;
+    options.append(temp);
+  }
 
   switch (trackData->style) {
   case bm:
-    temp.edges = 4;
+    temp.smooth = false;
+    temp.edges = 8;
     temp.offset.x = 0;
     temp.offset.y = -trackData->fHeart - spineHeight;
     temp.radius.x = spineSize;
@@ -3283,8 +1236,10 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
     // -trackData->fHeart-spineHeight, 0, false);
     break;
   case generic:
+  case arrow:
+    temp.edges = 24;
   case vekoma:
-    temp.edges = 12;
+    temp.edges = 24;
   case triangle:
     temp.offset.x = 0;
     temp.offset.y = -trackData->fHeart - spineHeight;
@@ -3310,7 +1265,7 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
   case smallflat:
     break;
   case doublespine:
-    temp.edges = 12;
+    temp.edges = 24;
     temp.offset.x = 0;
     temp.offset.y = -trackData->fHeart - spineHeight;
     temp.radius.x = spineSize;
@@ -3318,81 +1273,147 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
     options.append(temp);
     temp.offset.y = -trackData->fHeart - 0.45f - spineHeight;
     options.append(temp);
+    break;
+  case rmc:
+    temp.smooth = false;
+    temp.edges = 8;
+
+    temp.offset.x = -railSpacing - 0.047f;
+    temp.offset.y = -trackData->fHeart + 0.043f;
+    temp.radius.x = 0.127f * 1.4101f;
+    temp.radius.y = 0.01f * 1.4101f;
+    options.append(temp);
+    temp.offset.x *= -1;
+    options.append(temp);
+
+    temp.offset.x = -railSpacing + 0.0625f;
+    temp.offset.y = -trackData->fHeart;
+    temp.radius.x = 0.043f * 1.4101f;
+    temp.radius.y = temp.radius.x;
+    options.append(temp);
+    temp.offset.x *= -1;
+    options.append(temp);
+
+    temp.offset.x = -railSpacing - 0.037f;
+    temp.offset.y = -trackData->fHeart - 0.128f;
+    temp.radius.x = 0.0635f * 1.4101f;
+    temp.radius.y = 0.171f * 1.4101f;
+    options.append(temp);
+    temp.offset.x *= -1;
+    options.append(temp);
+
+    temp.offset.x = -railSpacing - 0.037f;
+    temp.offset.y = -trackData->fHeart - 0.3f;
+    temp.radius.x = 0.14f * 1.4101f;
+    temp.radius.y = 0.0045f * 1.4101f;
+    options.append(temp);
+    temp.offset.x *= -1;
+    options.append(temp);
+    break;
   }
 
-  create3dsPipes(_vertices, options);
+  createPipes(rails, options);
 
-  int edgeCount = 0;
-  for (int i = 0; i < options.size(); ++i)
-    edgeCount += options[i].edges;
+  createIndices();
 
-  QList<int> renderList;
-  for (int i = 0; i < posList.size(); ++i) {
-    renderList.append(i);
-  }
-  int nodeCount = posList.size();
-
-  QList<int> points;
-  int vBorder = 0;
-
-  for (int p = 0; p < options.size(); ++p) {
-    points.clear();
-    int offset = 0;
-    int edgeCnt = options[p].edges;
-    vBorder += edgeCnt * nodeCount + 2;
-    for (int i = 0; i < p; ++i) {
-      offset += options[i].edges * nodeCount + 2;
-    }
-    points.append(offset);
-    for (int e = 0; e < edgeCnt; e += 2) {
-      int e2 = (e + 1) % edgeCnt;
-      int e3 = (e + 2) % edgeCnt;
-      int i;
-      for (i = 0; i < nodeCount; ++i) {
-        points.append(offset + 1 + i * edgeCnt + e);
-        points.append(offset + 1 + i * edgeCnt + e2);
-      }
-      points.append(offset + 1 + i * edgeCnt);
-      for (i = nodeCount - 1; i >= 0; --i) {
-        points.append(offset + 1 + i * edgeCnt + e2);
-        points.append(offset + 1 + i * edgeCnt + e3);
-      }
-      points.append(offset);
-    }
-
-    for (int i = 0; i < points.size() - 2; ++i) {
-      if (i % 2) {
-        _indices->append(points[i]);
-        _indices->append(points[i + 1]);
-        _indices->append(points[i + 2]);
-      } else {
-        _indices->append(points[i]);
-        _indices->append(points[i + 2]);
-        _indices->append(points[i + 1]);
-      }
-    }
-    _borders->append(vBorder * 3);
-    _borders->append(_indices->size());
-  }
+  /*trackVertexSize += createPipe(rails, 12, railWidth, railWidth,
+  -trackData->fHeart, -railSpacing); createPipe(rails, 12, railWidth,
+  railWidth, -trackData->fHeart, railSpacing); switch(trackData->style)
+  {
+  case bm:
+      createPipe(rails, 4, spineSize*1.2, spineSize,
+  -trackData->fHeart-spineHeight, 0, false); createPipe(rails, 4, 0, 0,
+  -trackData->fHeart-spineHeight, 0, false); createPipe(rails, 4, 0, 0,
+  -trackData->fHeart-spineHeight, 0, false); break; case generic: case vekoma:
+  case triangle:
+      createPipe(rails, 12, spineSize, spineSize,
+  -trackData->fHeart-spineHeight, 0); break; case box: createPipe(rails, 12,
+  spineSize, spineSize, -trackData->fHeart-spineHeight, -railSpacing);
+      createPipe(rails, 12, spineSize, spineSize,
+  -trackData->fHeart-spineHeight, railSpacing); break; case genericflat: case
+  smallflat: break;
+  }*/
 
   // crossties
+  int iCrosstie = 0, iCrossShadow = 0;
+  while (crossties.size() > iCrosstie && fromNode > crossties[iCrosstie].node)
+    iCrosstie++; // cycle through crossties until we have something to change
+  while (crosstieshadows.size() > iCrossShadow &&
+         fromNode > crosstieshadows[iCrossShadow].node)
+    iCrossShadow++;
+
+  if (iCrosstie == 0)
+    distFromLastNode = crosstieSpacing / 2.f;
+  else
+    distFromLastNode =
+        trackData->getPoint(fromNode)->fTotalLength -
+        trackData->getPoint(crossties[iCrosstie - 1].node)->fTotalLength;
+
+  crossties.remove(iCrosstie, crossties.size() - iCrosstie);
+  crosstieshadows.remove(iCrossShadow, crosstieshadows.size() - iCrossShadow);
 
   curNode = NULL;
 
   posList.clear();
   secList.clear();
 
-  curSection = trackData->lSections[_sec];
-  for (j = 0; j < curSection->lNodes.size(); ++j) {
-    distFromLastNode += curSection->lNodes[(j)].fDistFromLast;
-    if (distFromLastNode >= crosstieSpacing) {
-      distFromLastNode -= crosstieSpacing;
-      posList.append(j);
-      secList.append(_sec);
+  j = fromSecI;
+  for (int i = fromSection; i < trackData->lSections.size(); i++) {
+    section *curSection = trackData->lSections[i];
+    for (; j < curSection->lNodes.size(); ++j) {
+      distFromLastNode += curSection->lNodes[(j)].fDistFromLast;
+      if (distFromLastNode >= crosstieSpacing) {
+        distFromLastNode -= crosstieSpacing;
+        posList.append(j);
+        secList.append(i);
+      }
     }
+    j = 0;
   }
 
   jSize = posList.size();
+
+  int offset = 0;
+  switch (trackData->style) {
+  // GENERIC
+  case generic:
+    offset = crossties.size() / 48;
+    break;
+  case genericflat:
+    offset = (crossties.size() + 24) / 48;
+    break;
+  // STYLE
+  case box:
+    offset = (crossties.size() + 96) / 192;
+    break;
+  case doublespine:
+    offset =
+        2 * (crossties.size() / (4 * 24)) + ((crossties.size() / 24) % 4) / 3;
+    break;
+  case smallflat:
+    offset = crossties.size() / 24;
+    break;
+  case triangle:
+    offset = (crossties.size() + 72) / 120;
+    break;
+  // MANUFACTURER
+  case arrow:
+    offset = crossties.size() / 228;
+    break;
+  case bm:
+    offset =
+        6 * (crossties.size() / 444) + ((crossties.size() % 444) - 12) / 72;
+    break;
+  case rmc:
+    offset = crossties.size() / 54;
+    break;
+  case vekoma:
+    offset = crossties.size() / 76; // TODO
+    break;
+  }
+
+  if (crossties.size())
+    curNode = trackData->getPoint(crossties.last().node);
 
 #define XS (0.06f)
 #define S (0.08f)
@@ -3407,16 +1428,18 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
 #define BOX_WIDTH (0.05f)
 
   for (int i = 0; i < jSize; ++i) {
-    int index = i;
+    int index = i + offset;
     j = posList[i];
     curSection = trackData->lSections[secList[i]];
     lastNode = curNode;
     curNode = &curSection->lNodes[j];
     nextNode = trackData->getNumPoints(curSection) + j;
 
+    // CROSSTIE GENERATION
     glm::vec3 P1, P2, P3, P4, P5, P6, P7, P8;
     float mysign = fabs(spineHeight) / spineHeight;
     switch (trackData->style) {
+    // GENERIC
     case generic:
       P1 = curNode->vRelPos(-trackData->fHeart + 0.1 * railWidth * mysign,
                             -railSpacing, -0.15 * spineHeight);
@@ -3437,7 +1460,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                                 0.9 * spineSize * mysign,
                             0, 0.15f); // 0.15*spineHeight);
 
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
       P1 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.15, 0,
                             -0.15f); //-0.35*spineHeight);
@@ -3458,7 +1482,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
       P8 =
           curNode->vRelPos(-trackData->fHeart, railSpacing, 0.15 * spineHeight);
 
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
       break;
     case genericflat:
       if (index % 6 == 0) {
@@ -3486,7 +1511,6 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
         P8 = curNode->vRelPos(-trackData->fHeart -
                                   railWidth * (mysign > 0 ? 1.0 : 0.8),
                               railSpacing, M);
-
       } else {
         P1 = curNode->vRelPos(-trackData->fHeart +
                                   railWidth * (mysign > 0 ? 0.5 : 1),
@@ -3514,7 +1538,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                               railSpacing, 0.03);
       }
 
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
       if (index) {
         P1 = lastNode->vRelPos(-trackData->fHeart +
@@ -3542,464 +1567,11 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                                   railWidth * (mysign > 0 ? 1 : 0.5),
                               railSpacing - 0.13, -0.03);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
       }
       break;
-    case vekoma:
-      P1 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            -railSpacing - 0.5 * railWidth, -0.05f);
-      P2 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            -railSpacing - 0.5 * railWidth, +0.05f);
-      P3 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            -railSpacing - 0.5 * railWidth, -0.05f);
-      P4 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            -railSpacing - 0.5 * railWidth, +0.05f);
-      P5 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            -1.2 * railSpacing, -0.05f);
-      P6 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            -1.2 * railSpacing, +0.05f);
-      P7 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            -1.2 * railSpacing, -0.05f);
-      P8 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            -1.2 * railSpacing, +0.05f);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            railSpacing + 0.5 * railWidth, -0.05f);
-      P2 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            railSpacing + 0.5 * railWidth, +0.05f);
-      P3 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            railSpacing + 0.5 * railWidth, -0.05f);
-      P4 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            railSpacing + 0.5 * railWidth, +0.05f);
-      P5 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            1.2 * railSpacing, -0.05f);
-      P6 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            1.2 * railSpacing, +0.05f);
-      P7 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            1.2 * railSpacing, -0.05f);
-      P8 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            1.2 * railSpacing, +0.05f);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            -1.2 * railSpacing, -0.05f);
-      P2 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            -1.2 * railSpacing, +0.05f);
-      P3 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            -1.3 * railSpacing, -0.05f);
-      P4 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            -1.3 * railSpacing, +0.05f);
-      P5 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                            -1.2 * railSpacing, -0.05f);
-      P6 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                            -1.2 * railSpacing, +0.05f);
-      P7 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                            -1.3 * railSpacing, -0.05f);
-      P8 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                            -1.3 * railSpacing, +0.05f);
-
-      create3dsQuad(_vertices, _indices, P2, P1, P3, P4);
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            1.3 * railSpacing, -0.05f);
-      P2 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
-                            1.3 * railSpacing, +0.05f);
-      P3 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            1.2 * railSpacing, -0.05f);
-      P4 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            1.2 * railSpacing, +0.05f);
-      P5 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                            1.3 * railSpacing, -0.05f);
-      P6 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                            1.3 * railSpacing, +0.05f);
-      P7 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                            1.2 * railSpacing, -0.05f);
-      P8 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                            1.2 * railSpacing, +0.05f);
-
-      create3dsQuad(_vertices, _indices, P2, P1, P3, P4);
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                            -1.3 * railSpacing, -0.05f);
-      P2 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                            -1.3 * railSpacing, +0.05f);
-      P3 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                            -1.3 * railSpacing, -0.05f);
-      P4 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                            -1.3 * railSpacing, +0.05f);
-      P5 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                            1.3 * railSpacing, -0.05f);
-      P6 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
-                            1.3 * railSpacing, +0.05f);
-      P7 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                            1.3 * railSpacing, -0.05f);
-      P8 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
-                            1.3 * railSpacing, +0.05f);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            -0.9 * railSpacing, -0.07f);
-      P2 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            -0.9 * railSpacing, +0.07f);
-      P3 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                            -0.9 * railSpacing, -0.07f);
-      P4 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                            -0.9 * railSpacing, +0.07f);
-      P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            -1.1 * spineSize, -0.07f);
-      P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            -1.1 * spineSize, +0.07f);
-      P7 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
-                                0.5 * mysign * (spineSize - 0.05),
-                            -1.1 * spineSize, -0.07f);
-      P8 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
-                                0.5 * mysign * (spineSize - 0.05),
-                            -1.1 * spineSize, +0.07f);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = P5;
-      P2 = P6;
-      P3 = P7;
-      P4 = P8;
-      P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            1.1 * spineSize, -0.07f);
-      P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            1.1 * spineSize, +0.07f);
-      P7 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
-                                0.5 * mysign * (spineSize - 0.05),
-                            1.1 * spineSize, -0.07f);
-      P8 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
-                                0.5 * mysign * (spineSize - 0.05),
-                            1.1 * spineSize, +0.07f);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = P5;
-      P2 = P6;
-      P3 = P7;
-      P4 = P8;
-      P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            0.9 * railSpacing, -0.07f);
-      P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            0.9 * railSpacing, +0.07f);
-      P7 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                            0.9 * railSpacing, -0.07f);
-      P8 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                            0.9 * railSpacing, +0.07f);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            0.9 * railSpacing, -0.07f);
-      P2 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            -0.9 * railSpacing, -0.07f);
-      P3 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                            0.9 * railSpacing, -0.07f);
-      P4 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                            -0.9 * railSpacing, -0.07f);
-      P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            0.9 * railSpacing, +0.07f);
-      P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
-                            -0.9 * railSpacing, +0.07f);
-      P7 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                            0.9 * railSpacing, +0.07f);
-      P8 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
-                            -0.9 * railSpacing, +0.07f);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-      break;
-    case bm:
-      P1 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            -railSpacing, -0.05f);
-      P2 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            -railSpacing, 0.05f);
-      P3 = curNode->vRelPos(-trackData->fHeart, -railSpacing, -0.05f);
-      P4 = curNode->vRelPos(-trackData->fHeart, -railSpacing, 0.05f);
-      P5 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                            -0.3 * spineSize, -0.05f);
-      P6 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                            -0.3 * spineSize, 0.05f);
-      P7 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                0.25 * 0.71 * spineSize * mysign,
-                            -0.71 * spineSize, -0.05f);
-      P8 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                0.25 * 0.71 * spineSize * mysign,
-                            -0.71 * spineSize, 0.05f);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      if (index % 6 == 0) {
-        P1 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              -0.71 * spineSize * 1.3, -0.05f);
-        P2 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              -0.71 * spineSize * 1.3, 0.05f);
-        P3 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  1.3 * 0.71 * spineSize * mysign,
-                              -0.71 * spineSize * 1.3, -0.05f);
-        P4 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  1.3 * 0.71 * spineSize * mysign,
-                              -0.71 * spineSize * 1.3, 0.05f);
-        P5 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              0.71 * spineSize * 1.3, -0.05f);
-        P6 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              0.71 * spineSize * 1.3, 0.05f);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  1.3 * 0.71 * spineSize * mysign,
-                              0.71 * spineSize * 1.3, -0.05f);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  1.3 * 0.71 * spineSize * mysign,
-                              0.71 * spineSize * 1.3, 0.05f);
-
-        create3dsQuad(_vertices, _indices, P2, P1, P3, P4);
-        create3dsQuad(_vertices, _indices, P5, P6, P8, P7);
-      } else {
-        P1 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              -0.71 * spineSize, -0.05f);
-        P2 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              -0.71 * spineSize, 0.05f);
-        P3 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  0.25 * 0.71 * spineSize * mysign,
-                              -0.71 * spineSize, -0.05f);
-        P4 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  0.25 * 0.71 * spineSize * mysign,
-                              -0.71 * spineSize, 0.05f);
-        P5 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              0.71 * spineSize, -0.05f);
-        P6 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
-                              0.71 * spineSize, 0.05f);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  0.25 * 0.71 * spineSize * mysign,
-                              0.71 * spineSize, -0.05f);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                  0.25 * 0.71 * spineSize * mysign,
-                              0.71 * spineSize, 0.05f);
-      }
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f, 0.3 * spineSize,
-                            -0.05f);
-      P2 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f, 0.3 * spineSize,
-                            0.05f);
-      P3 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                0.25 * 0.71 * spineSize * mysign,
-                            0.71 * spineSize, -0.05f);
-      P4 = curNode->vRelPos(-trackData->fHeart - spineHeight +
-                                0.25 * 0.71 * spineSize * mysign,
-                            0.71 * spineSize, 0.05f);
-      P5 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            railSpacing, -0.05f);
-      P6 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
-                            railSpacing, 0.05f);
-      P7 = curNode->vRelPos(-trackData->fHeart, railSpacing, -0.05f);
-      P8 = curNode->vRelPos(-trackData->fHeart, railSpacing, 0.05f);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-      break;
-    case triangle:
-      P1 = curNode->vRelPos(-trackData->fHeart +
-                                railWidth * (mysign > 0 ? 0.6 : 0.8),
-                            -railSpacing, -BOX_WIDTH);
-      P2 = curNode->vRelPos(-trackData->fHeart +
-                                railWidth * (mysign > 0 ? 0.6 : 0.8),
-                            -railSpacing, BOX_WIDTH);
-      P3 = curNode->vRelPos(-trackData->fHeart -
-                                railWidth * (mysign > 0 ? 0.8 : 0.6),
-                            -railSpacing, -BOX_WIDTH);
-      P4 = curNode->vRelPos(-trackData->fHeart -
-                                railWidth * (mysign > 0 ? 0.8 : 0.6),
-                            -railSpacing, BOX_WIDTH);
-      P5 = curNode->vRelPos(-trackData->fHeart +
-                                railWidth * (mysign > 0 ? 0.6 : 0.8),
-                            railSpacing, -BOX_WIDTH);
-      P6 = curNode->vRelPos(-trackData->fHeart +
-                                railWidth * (mysign > 0 ? 0.6 : 0.8),
-                            railSpacing, BOX_WIDTH);
-      P7 = curNode->vRelPos(-trackData->fHeart -
-                                railWidth * (mysign > 0 ? 0.8 : 0.6),
-                            railSpacing, -BOX_WIDTH);
-      P8 = curNode->vRelPos(-trackData->fHeart -
-                                railWidth * (mysign > 0 ? 0.8 : 0.6),
-                            railSpacing, BOX_WIDTH);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = curNode->vRelPos(
-          -trackData->fHeart - mysign * railWidth * 0.8,
-          mysign * (-railSpacing + BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-      P2 = curNode->vRelPos(
-          -trackData->fHeart - mysign * railWidth * 0.8,
-          mysign * (-railSpacing + BOX_INWARD + railWidth / 2), BOX_WIDTH);
-      P3 = curNode->vRelPos(
-          -trackData->fHeart - mysign * railWidth * 0.8,
-          mysign * (-railSpacing + BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-      P4 = curNode->vRelPos(
-          -trackData->fHeart - mysign * railWidth * 0.8,
-          mysign * (-railSpacing + BOX_INWARD - railWidth / 2), BOX_WIDTH);
-      P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                            mysign * railWidth / 2, -BOX_WIDTH);
-      P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                            mysign * railWidth / 2, BOX_WIDTH);
-      P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                            -mysign * railWidth / 2, -BOX_WIDTH);
-      P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                            -mysign * railWidth / 2, BOX_WIDTH);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      P1 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.8,
-                            mysign * (railSpacing - BOX_INWARD + railWidth / 2),
-                            -BOX_WIDTH);
-      P2 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.8,
-                            mysign * (railSpacing - BOX_INWARD + railWidth / 2),
-                            BOX_WIDTH);
-      P3 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.8,
-                            mysign * (railSpacing - BOX_INWARD - railWidth / 2),
-                            -BOX_WIDTH);
-      P4 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.8,
-                            mysign * (railSpacing - BOX_INWARD - railWidth / 2),
-                            BOX_WIDTH);
-      P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                            mysign * railWidth / 2, -BOX_WIDTH);
-      P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                            mysign * railWidth / 2, BOX_WIDTH);
-      P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                            -mysign * railWidth / 2, -BOX_WIDTH);
-      P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                            -mysign * railWidth / 2, BOX_WIDTH);
-
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-      if (index && index % 2) {
-        P1 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-        P2 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), BOX_WIDTH);
-        P3 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-        P4 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), BOX_WIDTH);
-        P5 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                               mysign * railWidth / 2, -BOX_WIDTH);
-        P6 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                               mysign * railWidth / 2, BOX_WIDTH);
-        P7 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                               -mysign * railWidth / 2, -BOX_WIDTH);
-        P8 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                               -mysign * railWidth / 2, BOX_WIDTH);
-
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-        P2 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD + railWidth / 2), BOX_WIDTH);
-        P3 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-        P4 = curNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD - railWidth / 2), BOX_WIDTH);
-        P5 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                               mysign * railWidth / 2, -BOX_WIDTH);
-        P6 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                               mysign * railWidth / 2, BOX_WIDTH);
-        P7 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                               -mysign * railWidth / 2, -BOX_WIDTH);
-        P8 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
-                               -mysign * railWidth / 2, BOX_WIDTH);
-
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-      } else if (index && index % 2 == 0) {
-        P1 = lastNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-        P2 = lastNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), BOX_WIDTH);
-        P3 = lastNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-        P4 = lastNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), BOX_WIDTH);
-        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              mysign * railWidth / 2, -BOX_WIDTH);
-        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              mysign * railWidth / 2, BOX_WIDTH);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -mysign * railWidth / 2, -BOX_WIDTH);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -mysign * railWidth / 2, BOX_WIDTH);
-
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-
-        P1 = lastNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD + railWidth / 2), -BOX_WIDTH);
-        P2 = lastNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD + railWidth / 2), BOX_WIDTH);
-        P3 = lastNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD - railWidth / 2), -BOX_WIDTH);
-        P4 = lastNode->vRelPos(
-            -trackData->fHeart - mysign * railWidth * 0.8,
-            mysign * (railSpacing - BOX_INWARD - railWidth / 2), BOX_WIDTH);
-        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              mysign * railWidth / 2, -BOX_WIDTH);
-        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              mysign * railWidth / 2, BOX_WIDTH);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -mysign * railWidth / 2, -BOX_WIDTH);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -mysign * railWidth / 2, BOX_WIDTH);
-
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-      }
-
-      if (index) {
-        P1 = lastNode->vRelPos(-trackData->fHeart +
-                                   railWidth * (mysign > 0 ? 0.4 : 0.6),
-                               -railSpacing + BOX_DIAG1, BOX_WIDTH);
-        P2 = lastNode->vRelPos(-trackData->fHeart +
-                                   railWidth * (mysign > 0 ? 0.4 : 0.6),
-                               -railSpacing + BOX_DIAG0, BOX_WIDTH);
-        P3 = lastNode->vRelPos(-trackData->fHeart -
-                                   railWidth * (mysign > 0 ? 0.6 : 0.4),
-                               -railSpacing + BOX_DIAG1, BOX_WIDTH);
-        P4 = lastNode->vRelPos(-trackData->fHeart -
-                                   railWidth * (mysign > 0 ? 0.6 : 0.4),
-                               -railSpacing + BOX_DIAG0, BOX_WIDTH);
-        P5 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.4 : 0.6),
-                              railSpacing - BOX_DIAG0, -BOX_WIDTH);
-        P6 = curNode->vRelPos(-trackData->fHeart +
-                                  railWidth * (mysign > 0 ? 0.4 : 0.6),
-                              railSpacing - BOX_DIAG1, -BOX_WIDTH);
-        P7 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.6 : 0.4),
-                              railSpacing - BOX_DIAG0, -BOX_WIDTH);
-        P8 = curNode->vRelPos(-trackData->fHeart -
-                                  railWidth * (mysign > 0 ? 0.6 : 0.4),
-                              railSpacing - BOX_DIAG1, -BOX_WIDTH);
-
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-      }
-      break;
+    // STYLE
     case box:
       P1 = curNode->vRelPos(-trackData->fHeart +
                                 railWidth * (mysign > 0 ? 0.6 : 0.8),
@@ -4026,7 +1598,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                                 railWidth * (mysign > 0 ? 0.8 : 0.6),
                             railSpacing, BOX_WIDTH);
 
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
       P1 = curNode->vRelPos(-trackData->fHeart - spineHeight +
                                 railWidth * (mysign < 0 ? 0.6 : 0.8),
@@ -4053,7 +1626,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                                 railWidth * (mysign < 0 ? 0.8 : 0.6),
                             railSpacing, BOX_WIDTH);
 
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
       P1 = curNode->vRelPos(
           -trackData->fHeart - mysign * railWidth * 0.6,
@@ -4080,7 +1654,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
           -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
           mysign * (-railSpacing + BOX_INWARD - railWidth * 0.7), BOX_WIDTH);
 
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
       P1 = curNode->vRelPos(
           -trackData->fHeart - mysign * railWidth * 0.6,
@@ -4107,7 +1682,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
           -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
           -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.7), BOX_WIDTH);
 
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
       if (index && index % 2) {
         P1 = curNode->vRelPos(
@@ -4135,7 +1711,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
             -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
             mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5), BOX_WIDTH);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
         P1 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.6,
                               -mysign *
@@ -4166,7 +1743,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
             -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
             -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5), BOX_WIDTH);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
         P1 = curNode->vRelPos(-trackData->fHeart -
                                   railWidth * (mysign > 0 ? 0.6 : 0.4),
@@ -4193,7 +1771,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                                    railWidth * (mysign > 0 ? 0.4 : 0.6),
                                railSpacing - BOX_DIAG1, BOX_WIDTH);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
         P1 = curNode->vRelPos(-trackData->fHeart - spineHeight -
                                   railWidth * (mysign < 0 ? 0.6 : 0.4),
@@ -4220,7 +1799,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                                    railWidth * (mysign < 0 ? 0.4 : 0.6),
                                railSpacing - BOX_DIAG1, BOX_WIDTH);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
       } else if (index && (index % 2 == 0)) {
         P1 = lastNode->vRelPos(
             -trackData->fHeart - mysign * railWidth * 0.6,
@@ -4247,7 +1827,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
             -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
             mysign * (-railSpacing + BOX_INWARD - railWidth * 0.5), BOX_WIDTH);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
         P1 = lastNode->vRelPos(
             -trackData->fHeart - mysign * railWidth * 0.6,
@@ -4278,7 +1859,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
             -trackData->fHeart - spineHeight + mysign * railWidth * 0.6,
             -mysign * (-railSpacing + BOX_INWARD + railWidth * 0.5), BOX_WIDTH);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
         P1 = lastNode->vRelPos(-trackData->fHeart +
                                    railWidth * (mysign > 0 ? 0.4 : 0.6),
@@ -4305,7 +1887,8 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                                   railWidth * (mysign > 0 ? 0.6 : 0.4),
                               railSpacing - BOX_DIAG1, -BOX_WIDTH);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
         P1 = lastNode->vRelPos(-trackData->fHeart - spineHeight +
                                    railWidth * (mysign < 0 ? 0.4 : 0.6),
@@ -4332,7 +1915,109 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                                   railWidth * (mysign < 0 ? 0.6 : 0.4),
                               railSpacing - BOX_DIAG1, -BOX_WIDTH);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      }
+      break;
+    case doublespine:
+      if (index % 2 == 0) {
+        P1 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
+                              -railSpacing, -0.12 * spineHeight);
+        P2 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
+                              -railSpacing, 0.12 * spineHeight);
+        P3 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
+                              -railSpacing, -0.12 * spineHeight);
+        P4 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
+                              -railSpacing, 0.12 * spineHeight);
+        P5 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
+                              railSpacing, -0.12 * spineHeight);
+        P6 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
+                              railSpacing, 0.12 * spineHeight);
+        P7 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
+                              railSpacing, -0.12 * spineHeight);
+        P8 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
+                              railSpacing, 0.12 * spineHeight);
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+        P1 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
+                              -0.80 * railSpacing, -0.10 * spineHeight);
+        P2 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
+                              -0.80 * railSpacing, 0.10 * spineHeight);
+        P3 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
+                              -0.80 * railSpacing, -0.10 * spineHeight);
+        P4 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
+                              -0.80 * railSpacing, 0.10 * spineHeight);
+        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
+                              -0.20 * spineHeight);
+        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
+                              0.20 * spineHeight);
+        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight -
+                                  0.9 * spineSize * mysign,
+                              0, -0.10 * spineHeight);
+        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight -
+                                  0.9 * spineSize * mysign,
+                              0, 0.10 * spineHeight);
+
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+        P1 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
+                              -0.20 * spineHeight);
+        P2 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
+                              0.20 * spineHeight);
+        P3 = curNode->vRelPos(-trackData->fHeart - spineHeight -
+                                  0.9 * spineSize * mysign,
+                              0, -0.10 * spineHeight);
+        P4 = curNode->vRelPos(-trackData->fHeart - spineHeight -
+                                  0.9 * spineSize * mysign,
+                              0, 0.10 * spineHeight);
+        P5 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
+                              0.80 * railSpacing, -0.10 * spineHeight);
+        P6 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
+                              0.80 * railSpacing, 0.10 * spineHeight);
+        P7 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
+                              0.80 * railSpacing, -0.10 * spineHeight);
+        P8 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
+                              0.80 * railSpacing, 0.10 * spineHeight);
+
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      }
+      if ((index + 3) % 4 == 0) {
+        P1 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              0.65 * spineSize, -0.65 * spineSize);
+        P2 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              0.65 * spineSize, 0.65 * spineSize);
+        P3 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              -0.65 * spineSize, -0.65 * spineSize);
+        P4 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              -0.65 * spineSize, 0.65 * spineSize);
+        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
+                              0.65 * spineSize, -0.65 * spineSize);
+        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
+                              0.65 * spineSize, 0.65 * spineSize);
+        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
+                              -0.65 * spineSize, -0.65 * spineSize);
+        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
+                              -0.65 * spineSize, 0.65 * spineSize);
+
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      }
+      if ((index + 1) % 4 == 0) {
+        P1 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              0.65 * spineSize, -0.65 * spineSize);
+        P2 = P1;
+        P3 = P1;
+        P4 = P1;
+        P5 = P1;
+        P6 = P1;
+        P7 = P1;
+        P8 = P1;
+
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
       }
       break;
     case smallflat:
@@ -4361,100 +2046,602 @@ void trackMesh::build3ds(const int _sec, QVector<float> *_vertices,
                                 railWidth * (mysign > 0 ? 1 : 0.5),
                             railSpacing, BOX_WIDTH);
 
-      create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
       break;
-    case doublespine:
-      if (index % 2 == 0) {
-        P1 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
-                              -railSpacing, -0.12 * spineHeight);
-        P2 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
-                              -railSpacing, 0.12 * spineHeight);
-        P3 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
-                              -railSpacing, -0.12 * spineHeight);
-        P4 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
-                              -railSpacing, 0.12 * spineHeight);
-        P5 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
-                              railSpacing, -0.12 * spineHeight);
-        P6 = curNode->vRelPos(-trackData->fHeart + 0.75 * railWidth * mysign,
-                              railSpacing, 0.12 * spineHeight);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
-                              railSpacing, -0.12 * spineHeight);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.25 * railWidth * mysign,
-                              railSpacing, 0.12 * spineHeight);
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+    case triangle:
+      P1 = curNode->vRelPos(-trackData->fHeart +
+                                railWidth * (mysign > 0 ? 0.6 : 0.8),
+                            -railSpacing, -BOX_WIDTH);
+      P2 = curNode->vRelPos(-trackData->fHeart +
+                                railWidth * (mysign > 0 ? 0.6 : 0.8),
+                            -railSpacing, BOX_WIDTH);
+      P3 = curNode->vRelPos(-trackData->fHeart -
+                                railWidth * (mysign > 0 ? 0.8 : 0.6),
+                            -railSpacing, -BOX_WIDTH);
+      P4 = curNode->vRelPos(-trackData->fHeart -
+                                railWidth * (mysign > 0 ? 0.8 : 0.6),
+                            -railSpacing, BOX_WIDTH);
+      P5 = curNode->vRelPos(-trackData->fHeart +
+                                railWidth * (mysign > 0 ? 0.6 : 0.8),
+                            railSpacing, -BOX_WIDTH);
+      P6 = curNode->vRelPos(-trackData->fHeart +
+                                railWidth * (mysign > 0 ? 0.6 : 0.8),
+                            railSpacing, BOX_WIDTH);
+      P7 = curNode->vRelPos(-trackData->fHeart -
+                                railWidth * (mysign > 0 ? 0.8 : 0.6),
+                            railSpacing, -BOX_WIDTH);
+      P8 = curNode->vRelPos(-trackData->fHeart -
+                                railWidth * (mysign > 0 ? 0.8 : 0.6),
+                            railSpacing, BOX_WIDTH);
 
-        P1 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
-                              -0.80 * railSpacing, -0.10 * spineHeight);
-        P2 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
-                              -0.80 * railSpacing, 0.10 * spineHeight);
-        P3 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
-                              -0.80 * railSpacing, -0.10 * spineHeight);
-        P4 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
-                              -0.80 * railSpacing, 0.10 * spineHeight);
-        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
-                              -0.20 * spineHeight);
-        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
-                              0.20 * spineHeight);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  0.9 * spineSize * mysign,
-                              0, -0.10 * spineHeight);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  0.9 * spineSize * mysign,
-                              0, 0.10 * spineHeight);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+      P1 = curNode->vRelPos(
+          -trackData->fHeart - mysign * railWidth * 0.8,
+          mysign * (-railSpacing + BOX_INWARD + railWidth / 2), -BOX_WIDTH);
+      P2 = curNode->vRelPos(
+          -trackData->fHeart - mysign * railWidth * 0.8,
+          mysign * (-railSpacing + BOX_INWARD + railWidth / 2), BOX_WIDTH);
+      P3 = curNode->vRelPos(
+          -trackData->fHeart - mysign * railWidth * 0.8,
+          mysign * (-railSpacing + BOX_INWARD - railWidth / 2), -BOX_WIDTH);
+      P4 = curNode->vRelPos(
+          -trackData->fHeart - mysign * railWidth * 0.8,
+          mysign * (-railSpacing + BOX_INWARD - railWidth / 2), BOX_WIDTH);
+      P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                            mysign * railWidth / 2, -BOX_WIDTH);
+      P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                            mysign * railWidth / 2, BOX_WIDTH);
+      P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                            -mysign * railWidth / 2, -BOX_WIDTH);
+      P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                            -mysign * railWidth / 2, BOX_WIDTH);
 
-        P1 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
-                              -0.20 * spineHeight);
-        P2 = curNode->vRelPos(-trackData->fHeart - spineHeight * 0.7, 0,
-                              0.20 * spineHeight);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.8,
+                            mysign * (railSpacing - BOX_INWARD + railWidth / 2),
+                            -BOX_WIDTH);
+      P2 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.8,
+                            mysign * (railSpacing - BOX_INWARD + railWidth / 2),
+                            BOX_WIDTH);
+      P3 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.8,
+                            mysign * (railSpacing - BOX_INWARD - railWidth / 2),
+                            -BOX_WIDTH);
+      P4 = curNode->vRelPos(-trackData->fHeart - mysign * railWidth * 0.8,
+                            mysign * (railSpacing - BOX_INWARD - railWidth / 2),
+                            BOX_WIDTH);
+      P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                            mysign * railWidth / 2, -BOX_WIDTH);
+      P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                            mysign * railWidth / 2, BOX_WIDTH);
+      P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                            -mysign * railWidth / 2, -BOX_WIDTH);
+      P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                            -mysign * railWidth / 2, BOX_WIDTH);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      if (index && index % 2) {
+        P1 = curNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), -BOX_WIDTH);
+        P2 = curNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), BOX_WIDTH);
+        P3 = curNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), -BOX_WIDTH);
+        P4 = curNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), BOX_WIDTH);
+        P5 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
+                               mysign * railWidth / 2, -BOX_WIDTH);
+        P6 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
+                               mysign * railWidth / 2, BOX_WIDTH);
+        P7 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
+                               -mysign * railWidth / 2, -BOX_WIDTH);
+        P8 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
+                               -mysign * railWidth / 2, BOX_WIDTH);
+
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+        P1 = curNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (railSpacing - BOX_INWARD + railWidth / 2), -BOX_WIDTH);
+        P2 = curNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (railSpacing - BOX_INWARD + railWidth / 2), BOX_WIDTH);
+        P3 = curNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (railSpacing - BOX_INWARD - railWidth / 2), -BOX_WIDTH);
+        P4 = curNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (railSpacing - BOX_INWARD - railWidth / 2), BOX_WIDTH);
+        P5 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
+                               mysign * railWidth / 2, -BOX_WIDTH);
+        P6 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
+                               mysign * railWidth / 2, BOX_WIDTH);
+        P7 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
+                               -mysign * railWidth / 2, -BOX_WIDTH);
+        P8 = lastNode->vRelPos(-trackData->fHeart - spineHeight,
+                               -mysign * railWidth / 2, BOX_WIDTH);
+
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      } else if (index && index % 2 == 0) {
+        P1 = lastNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), -BOX_WIDTH);
+        P2 = lastNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (-railSpacing + BOX_INWARD + railWidth / 2), BOX_WIDTH);
+        P3 = lastNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), -BOX_WIDTH);
+        P4 = lastNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (-railSpacing + BOX_INWARD - railWidth / 2), BOX_WIDTH);
+        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              mysign * railWidth / 2, -BOX_WIDTH);
+        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              mysign * railWidth / 2, BOX_WIDTH);
+        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              -mysign * railWidth / 2, -BOX_WIDTH);
+        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              -mysign * railWidth / 2, BOX_WIDTH);
+
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+        P1 = lastNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (railSpacing - BOX_INWARD + railWidth / 2), -BOX_WIDTH);
+        P2 = lastNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (railSpacing - BOX_INWARD + railWidth / 2), BOX_WIDTH);
+        P3 = lastNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (railSpacing - BOX_INWARD - railWidth / 2), -BOX_WIDTH);
+        P4 = lastNode->vRelPos(
+            -trackData->fHeart - mysign * railWidth * 0.8,
+            mysign * (railSpacing - BOX_INWARD - railWidth / 2), BOX_WIDTH);
+        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              mysign * railWidth / 2, -BOX_WIDTH);
+        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              mysign * railWidth / 2, BOX_WIDTH);
+        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              -mysign * railWidth / 2, -BOX_WIDTH);
+        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight,
+                              -mysign * railWidth / 2, BOX_WIDTH);
+
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      }
+
+      if (index) {
+        P1 = lastNode->vRelPos(-trackData->fHeart +
+                                   railWidth * (mysign > 0 ? 0.4 : 0.6),
+                               -railSpacing + BOX_DIAG1, BOX_WIDTH);
+        P2 = lastNode->vRelPos(-trackData->fHeart +
+                                   railWidth * (mysign > 0 ? 0.4 : 0.6),
+                               -railSpacing + BOX_DIAG0, BOX_WIDTH);
+        P3 = lastNode->vRelPos(-trackData->fHeart -
+                                   railWidth * (mysign > 0 ? 0.6 : 0.4),
+                               -railSpacing + BOX_DIAG1, BOX_WIDTH);
+        P4 = lastNode->vRelPos(-trackData->fHeart -
+                                   railWidth * (mysign > 0 ? 0.6 : 0.4),
+                               -railSpacing + BOX_DIAG0, BOX_WIDTH);
+        P5 = curNode->vRelPos(-trackData->fHeart +
+                                  railWidth * (mysign > 0 ? 0.4 : 0.6),
+                              railSpacing - BOX_DIAG0, -BOX_WIDTH);
+        P6 = curNode->vRelPos(-trackData->fHeart +
+                                  railWidth * (mysign > 0 ? 0.4 : 0.6),
+                              railSpacing - BOX_DIAG1, -BOX_WIDTH);
+        P7 = curNode->vRelPos(-trackData->fHeart -
+                                  railWidth * (mysign > 0 ? 0.6 : 0.4),
+                              railSpacing - BOX_DIAG0, -BOX_WIDTH);
+        P8 = curNode->vRelPos(-trackData->fHeart -
+                                  railWidth * (mysign > 0 ? 0.6 : 0.4),
+                              railSpacing - BOX_DIAG1, -BOX_WIDTH);
+
+        createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+        createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      }
+      break;
+    // MANUFACTURER
+    case arrow:
+      P1 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            -railSpacing - 0.5 * railWidth, -0.05f);
+      P2 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            -railSpacing - 0.5 * railWidth, +0.05f);
+      P3 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            -railSpacing - 0.5 * railWidth, -0.05f);
+      P4 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            -railSpacing - 0.5 * railWidth, +0.05f);
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            -1.2 * railSpacing, -0.05f);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            -1.2 * railSpacing, +0.05f);
+      P7 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            -1.2 * railSpacing, -0.05f);
+      P8 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            -1.2 * railSpacing, +0.05f);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            railSpacing + 0.5 * railWidth, -0.05f);
+      P2 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            railSpacing + 0.5 * railWidth, +0.05f);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            railSpacing + 0.5 * railWidth, -0.05f);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            railSpacing + 0.5 * railWidth, +0.05f);
+      P5 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            1.2 * railSpacing, -0.05f);
+      P6 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            1.2 * railSpacing, +0.05f);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            1.2 * railSpacing, -0.05f);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            1.2 * railSpacing, +0.05f);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            -1.2 * railSpacing, -0.05f);
+      P2 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            -1.2 * railSpacing, +0.05f);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            -1.3 * railSpacing, -0.05f);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            -1.3 * railSpacing, +0.05f);
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
+                            -1.2 * railSpacing, -0.05f);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
+                            -1.2 * railSpacing, +0.05f);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
+                            -1.3 * railSpacing, -0.05f);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
+                            -1.3 * railSpacing, +0.05f);
+
+      createQuad(crossties, P2, P1, P3, P4);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            1.3 * railSpacing, -0.05f);
+      P2 = curNode->vRelPos(-trackData->fHeart - 0.7 * railWidth * mysign,
+                            1.3 * railSpacing, +0.05f);
+      P3 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            1.2 * railSpacing, -0.05f);
+      P4 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            1.2 * railSpacing, +0.05f);
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
+                            1.3 * railSpacing, -0.05f);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
+                            1.3 * railSpacing, +0.05f);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
+                            1.2 * railSpacing, -0.05f);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
+                            1.2 * railSpacing, +0.05f);
+
+      createQuad(crossties, P2, P1, P3, P4);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
+                            -1.3 * railSpacing, -0.05f);
+      P2 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
+                            -1.3 * railSpacing, +0.05f);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
+                            -1.3 * railSpacing, -0.05f);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
+                            -1.3 * railSpacing, +0.05f);
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
+                            1.3 * railSpacing, -0.05f);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.45 * mysign,
+                            1.3 * railSpacing, +0.05f);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
+                            1.3 * railSpacing, -0.05f);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.55 * mysign,
+                            1.3 * railSpacing, +0.05f);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            -0.9 * railSpacing, -0.07f);
+      P2 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            -0.9 * railSpacing, +0.07f);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
+                            -0.9 * railSpacing, -0.07f);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
+                            -0.9 * railSpacing, +0.07f);
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            -1.1 * spineSize, -0.07f);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            -1.1 * spineSize, +0.07f);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
+                                0.5 * mysign * (spineSize - 0.05),
+                            -1.1 * spineSize, -0.07f);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
+                                0.5 * mysign * (spineSize - 0.05),
+                            -1.1 * spineSize, +0.07f);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = P5;
+      P2 = P6;
+      P3 = P7;
+      P4 = P8;
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            1.1 * spineSize, -0.07f);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            1.1 * spineSize, +0.07f);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
+                                0.5 * mysign * (spineSize - 0.05),
+                            1.1 * spineSize, -0.07f);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.9 * spineHeight -
+                                0.5 * mysign * (spineSize - 0.05),
+                            1.1 * spineSize, +0.07f);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = P5;
+      P2 = P6;
+      P3 = P7;
+      P4 = P8;
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            0.9 * railSpacing, -0.07f);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            0.9 * railSpacing, +0.07f);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
+                            0.9 * railSpacing, -0.07f);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
+                            0.9 * railSpacing, +0.07f);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            0.9 * railSpacing, -0.07f);
+      P2 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            -0.9 * railSpacing, -0.07f);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
+                            0.9 * railSpacing, -0.07f);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
+                            -0.9 * railSpacing, -0.07f);
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            0.9 * railSpacing, +0.07f);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.48f * mysign,
+                            -0.9 * railSpacing, +0.07f);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
+                            0.9 * railSpacing, +0.07f);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.58f * mysign,
+                            -0.9 * railSpacing, +0.07f);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      break;
+    case bm:
+      P1 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            -railSpacing, -0.05f * mysign);
+      P2 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            -railSpacing, 0.05f * mysign);
+      P3 = curNode->vRelPos(-trackData->fHeart, -railSpacing, -0.05f * mysign);
+      P4 = curNode->vRelPos(-trackData->fHeart, -railSpacing, 0.05f * mysign);
+      P5 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                            -0.3 * spineSize, -0.05f * mysign);
+      P6 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                            -0.3 * spineSize, 0.05f * mysign);
+      P7 = curNode->vRelPos(-trackData->fHeart - spineHeight +
+                                0.25 * 0.71 * spineSize * mysign,
+                            -0.71 * spineSize, -0.05f * mysign);
+      P8 = curNode->vRelPos(-trackData->fHeart - spineHeight +
+                                0.25 * 0.71 * spineSize * mysign,
+                            -0.71 * spineSize, 0.05f * mysign);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      if (index % 6 == 0) {
+        P1 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                              -0.71 * spineSize * 1.3, -0.05f * mysign);
+        P2 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                              -0.71 * spineSize * 1.3, 0.05f * mysign);
         P3 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  0.9 * spineSize * mysign,
-                              0, -0.10 * spineHeight);
+                                  1.3 * 0.71 * spineSize * mysign,
+                              -0.71 * spineSize * 1.3, -0.05f * mysign);
         P4 = curNode->vRelPos(-trackData->fHeart - spineHeight -
-                                  0.9 * spineSize * mysign,
-                              0, 0.10 * spineHeight);
-        P5 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
-                              0.80 * railSpacing, -0.10 * spineHeight);
-        P6 = curNode->vRelPos(-trackData->fHeart + 0.7 * railWidth * mysign,
-                              0.80 * railSpacing, 0.10 * spineHeight);
-        P7 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
-                              0.80 * railSpacing, -0.10 * spineHeight);
-        P8 = curNode->vRelPos(-trackData->fHeart - 0.2 * railWidth * mysign,
-                              0.80 * railSpacing, 0.10 * spineHeight);
+                                  1.3 * 0.71 * spineSize * mysign,
+                              -0.71 * spineSize * 1.3, 0.05f * mysign);
+        P5 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                              0.71 * spineSize * 1.3, -0.05f * mysign);
+        P6 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                              0.71 * spineSize * 1.3, 0.05f * mysign);
+        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight -
+                                  1.3 * 0.71 * spineSize * mysign,
+                              0.71 * spineSize * 1.3, -0.05f * mysign);
+        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight -
+                                  1.3 * 0.71 * spineSize * mysign,
+                              0.71 * spineSize * 1.3, 0.05f * mysign);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
+        createQuad(crossties, P2, P1, P3, P4);
+        createQuad(crossties, P5, P6, P8, P7);
+      } else {
+        P1 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                              -0.71 * spineSize, -0.05f * mysign);
+        P2 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                              -0.71 * spineSize, 0.05f * mysign);
+        P3 = curNode->vRelPos(-trackData->fHeart - spineHeight +
+                                  0.25 * 0.71 * spineSize * mysign,
+                              -0.71 * spineSize, -0.05f * mysign);
+        P4 = curNode->vRelPos(-trackData->fHeart - spineHeight +
+                                  0.25 * 0.71 * spineSize * mysign,
+                              -0.71 * spineSize, 0.05f * mysign);
+        P5 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                              0.71 * spineSize, -0.05f * mysign);
+        P6 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f,
+                              0.71 * spineSize, 0.05f * mysign);
+        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight +
+                                  0.25 * 0.71 * spineSize * mysign,
+                              0.71 * spineSize, -0.05f * mysign);
+        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight +
+                                  0.25 * 0.71 * spineSize * mysign,
+                              0.71 * spineSize, 0.05f * mysign);
       }
-      if ((index + 3) % 4 == 0) {
-        P1 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              0.65 * spineSize, -0.65 * spineSize);
-        P2 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              0.65 * spineSize, 0.65 * spineSize);
-        P3 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -0.65 * spineSize, -0.65 * spineSize);
-        P4 = curNode->vRelPos(-trackData->fHeart - spineHeight,
-                              -0.65 * spineSize, 0.65 * spineSize);
-        P5 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
-                              0.65 * spineSize, -0.65 * spineSize);
-        P6 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
-                              0.65 * spineSize, 0.65 * spineSize);
-        P7 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
-                              -0.65 * spineSize, -0.65 * spineSize);
-        P8 = curNode->vRelPos(-trackData->fHeart - spineHeight - 0.4,
-                              -0.65 * spineSize, 0.65 * spineSize);
 
-        create3dsBox(_vertices, _indices, P1, P2, P3, P4, P5, P6, P7, P8);
-      }
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f, 0.3 * spineSize,
+                            -0.05f * mysign);
+      P2 = curNode->vRelPos(-trackData->fHeart - mysign * 0.1f, 0.3 * spineSize,
+                            0.05f * mysign);
+      P3 = curNode->vRelPos(-trackData->fHeart - spineHeight +
+                                0.25 * 0.71 * spineSize * mysign,
+                            0.71 * spineSize, -0.05f * mysign);
+      P4 = curNode->vRelPos(-trackData->fHeart - spineHeight +
+                                0.25 * 0.71 * spineSize * mysign,
+                            0.71 * spineSize, 0.05f * mysign);
+      P5 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            railSpacing, -0.05f * mysign);
+      P6 = curNode->vRelPos(-trackData->fHeart + 0.5 * railWidth * mysign,
+                            railSpacing, 0.05f * mysign);
+      P7 = curNode->vRelPos(-trackData->fHeart, railSpacing, -0.05f * mysign);
+      P8 = curNode->vRelPos(-trackData->fHeart, railSpacing, 0.05f * mysign);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
       break;
-    }
-    if (index % 5 == 4 && i != jSize - 1) {
-      _borders->append(_vertices->size());
-      _borders->append(_indices->size());
+    case rmc:
+      P1 = curNode->vRelPos(-trackData->fHeart - 0.303f * mysign,
+                            -railSpacing - 0.176f, -0.051f * mysign);
+      P2 = curNode->vRelPos(-trackData->fHeart - 0.303f * mysign,
+                            -railSpacing - 0.176f, 0.051f * mysign);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.315f * mysign,
+                            -railSpacing - 0.176f, -0.051f * mysign);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.315f * mysign,
+                            -railSpacing - 0.176f, 0.051f * mysign);
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.303f * mysign,
+                            railSpacing + 0.176f, -0.051f * mysign);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.303f * mysign,
+                            railSpacing + 0.176f, 0.051f * mysign);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.315f * mysign,
+                            railSpacing + 0.176f, -0.051f * mysign);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.315f * mysign,
+                            railSpacing + 0.176f, 0.051f * mysign);
+
+      createQuad(crossties, P2, P1, P3, P4);
+      createQuad(crossties, P6, P5, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+
+      P1 = curNode->vRelPos(-trackData->fHeart - 0.435f * mysign,
+                            -railSpacing - 0.176f, -0.051f * mysign);
+      P2 = curNode->vRelPos(-trackData->fHeart - 0.435f * mysign,
+                            -railSpacing - 0.176f, -0.039f * mysign);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.435f * mysign,
+                            railSpacing + 0.176f, -0.051f * mysign);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.435f * mysign,
+                            railSpacing + 0.176f, -0.039f * mysign);
+      P5 = curNode->vRelPos(-trackData->fHeart - 0.315f * mysign,
+                            -railSpacing - 0.176f, -0.051f * mysign);
+      P6 = curNode->vRelPos(-trackData->fHeart - 0.315f * mysign,
+                            -railSpacing - 0.176f, -0.039f * mysign);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.315f * mysign,
+                            railSpacing + 0.176f, -0.051f * mysign);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.315f * mysign,
+                            railSpacing + 0.176f, -0.039f * mysign);
+
+      createQuad(crossties, P6, P5, P7, P8);
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      break;
+    case vekoma: // y, x, z
+      // beam
+      P1 = curNode->vRelPos(-trackData->fHeart + 0.045f * mysign, -railSpacing,
+                            -0.06f * mysign);
+      P2 = curNode->vRelPos(-trackData->fHeart + 0.045f * mysign, -railSpacing,
+                            0.06f * mysign);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.045f * mysign, -railSpacing,
+                            -0.06f * mysign);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.045f * mysign, -railSpacing,
+                            0.06f * mysign);
+
+      P5 = curNode->vRelPos(-trackData->fHeart + 0.045f * mysign, railSpacing,
+                            -0.06f * mysign);
+      P6 = curNode->vRelPos(-trackData->fHeart + 0.045f * mysign, railSpacing,
+                            0.06f * mysign);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.045f * mysign, railSpacing,
+                            -0.06f * mysign);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.045f * mysign, railSpacing,
+                            0.06f * mysign);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      // right
+      P1 = curNode->vRelPos(-trackData->fHeart + 0.012f * mysign, 0,
+                            -0.068f * mysign);
+      P2 = curNode->vRelPos(-trackData->fHeart + 0.012f * mysign, 0,
+                            0.068f * mysign);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.47f * mysign, 0,
+                            -0.068f * mysign);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.47f * mysign, 0,
+                            0.068f * mysign);
+      P5 = curNode->vRelPos(-trackData->fHeart + 0.012f * mysign,
+                            railSpacing - 0.14f, -0.068f * mysign);
+      P6 = curNode->vRelPos(-trackData->fHeart + 0.012f * mysign,
+                            railSpacing - 0.14f, 0.068f * mysign);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.08f * mysign,
+                            railSpacing - 0.14f, -0.068f * mysign);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.08f * mysign,
+                            railSpacing - 0.14f, 0.068f * mysign);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      createQuad(crossties, P6, P5, P7, P8);
+
+      // left
+      P1 = curNode->vRelPos(-trackData->fHeart + 0.012f * mysign,
+                            -railSpacing + 0.14f, -0.068f * mysign);
+      P2 = curNode->vRelPos(-trackData->fHeart + 0.012f * mysign,
+                            -railSpacing + 0.14f, 0.068f * mysign);
+      P3 = curNode->vRelPos(-trackData->fHeart - 0.08f * mysign,
+                            -railSpacing + 0.14f, -0.068f * mysign);
+      P4 = curNode->vRelPos(-trackData->fHeart - 0.08f * mysign,
+                            -railSpacing + 0.14f, 0.068f * mysign);
+      P5 = curNode->vRelPos(-trackData->fHeart + 0.012f * mysign, 0,
+                            -0.068f * mysign);
+      P6 = curNode->vRelPos(-trackData->fHeart + 0.012f * mysign, 0,
+                            0.068f * mysign);
+      P7 = curNode->vRelPos(-trackData->fHeart - 0.47f * mysign, 0,
+                            -0.068f * mysign);
+      P8 = curNode->vRelPos(-trackData->fHeart - 0.47f * mysign, 0,
+                            0.068f * mysign);
+
+      createBox(crossties, P1, P2, P3, P4, P5, P6, P7, P8);
+      createShadowBox(crosstieshadows, P1, P2, P3, P4, P5, P6, P7, P8);
+      createQuad(crossties, P2, P1, P3, P4);
+      break;
     }
   }
-  _borders->append(_vertices->size());
-  _borders->append(_indices->size());
-
+  mSec = timer.nsecsElapsed() / 1000000.;
+  gloParent->showMessage(
+      QString::number(mSec).append(QString("ms used to build meshes")), 3000);
+  createIndices();
+  updateVertexArrays();
   return;
 }
 
@@ -4669,96 +2856,88 @@ void trackMesh::createIndices() {
   pipeBorders.clear();
   pipeIndices.clear();
   pipeBorders.append(0);
-  if (isWireframe) {
-    for (int p = 0; p < numRails; ++p) {
-      for (int i = 0; i < renderList.size(); ++i) {
-        pipeIndices.append(p + numRails * renderList[i]);
-      }
-      pipeBorders.append(pipeIndices.size());
+
+  for (int p = 0; p < options.size(); ++p) {
+    int offset = 0;
+    for (int i = 0; i < p; ++i) {
+      offset += options[i].edges;
     }
-  } else {
-    for (int p = 0; p < options.size(); ++p) {
-      int offset = 0;
-      for (int i = 0; i < p; ++i) {
-        offset += options[i].edges;
+    pipeIndices.append(p);
+    for (int e = 0; e < options[p].edges; e += 2) {
+      int e2 = (e + 1) % options[p].edges;
+      int e3 = (e + 2) % options[p].edges;
+      int i;
+      for (i = 0; i < renderList.size(); ++i) {
+        int node = renderList[i];
+        pipeIndices.append(options.size() + offset + edgeCount * node + e);
+        pipeIndices.append(options.size() + offset + edgeCount * node + e2);
+      }
+      pipeIndices.append(options.size() + edgeCount * nodeCount + p);
+      for (i = renderList.size() - 1; i >= 0; --i) {
+        int node = renderList[i];
+        pipeIndices.append(options.size() + offset + edgeCount * node + e3);
+        pipeIndices.append(options.size() + offset + edgeCount * node + e2);
       }
       pipeIndices.append(p);
-      for (int e = 0; e < options[p].edges; e += 2) {
-        int e2 = (e + 1) % options[p].edges;
-        int e3 = (e + 2) % options[p].edges;
-        int i;
-        for (i = 0; i < renderList.size(); ++i) {
-          int node = renderList[i];
-          pipeIndices.append(options.size() + offset + edgeCount * node + e);
-          pipeIndices.append(options.size() + offset + edgeCount * node + e2);
-        }
-        pipeIndices.append(options.size() + edgeCount * nodeCount + p);
-        for (i = renderList.size() - 1; i >= 0; --i) {
-          int node = renderList[i];
-          pipeIndices.append(options.size() + offset + edgeCount * node + e3);
-          pipeIndices.append(options.size() + offset + edgeCount * node + e2);
-        }
-        pipeIndices.append(p);
-      }
-      pipeBorders.append(pipeIndices.size());
     }
+    pipeBorders.append(pipeIndices.size());
+  }
 
-    shadowIndices.clear();
-    for (int p = 0; p < options.size(); ++p) {
-      int offset = 4 * p;
-      int disp = 4 * options.size();
-      int i = 0, oldI = 0;
-      shadowIndices.append(offset + 0);
-      shadowIndices.append(offset + 1);
-      shadowIndices.append(offset + 3);
+  shadowIndices.clear();
+  for (int p = 0; p < options.size(); ++p) {
+    int offset = 4 * p;
+    int disp = 4 * options.size();
+    int i = 0, oldI = 0;
+    shadowIndices.append(offset + 0);
+    shadowIndices.append(offset + 1);
+    shadowIndices.append(offset + 3);
 
-      shadowIndices.append(offset + 1);
-      shadowIndices.append(offset + 2);
-      shadowIndices.append(offset + 3);
-      for (i = 1; i < railshadows.size() / (4 * options.size()); ++i) {
-        shadowIndices.append(i * disp + offset + 0);
-        shadowIndices.append(i * disp + offset + 1);
-        shadowIndices.append(oldI * disp + offset + 0);
+    shadowIndices.append(offset + 1);
+    shadowIndices.append(offset + 2);
+    shadowIndices.append(offset + 3);
+    for (i = 1; i < railshadows.size() / (4 * options.size()); ++i) {
+      shadowIndices.append(i * disp + offset + 0);
+      shadowIndices.append(i * disp + offset + 1);
+      shadowIndices.append(oldI * disp + offset + 0);
 
-        shadowIndices.append(i * disp + offset + 1);
-        shadowIndices.append(oldI * disp + offset + 1);
-        shadowIndices.append(oldI * disp + offset + 0);
-
-        shadowIndices.append(i * disp + offset + 1);
-        shadowIndices.append(i * disp + offset + 2);
-        shadowIndices.append(oldI * disp + offset + 1);
-
-        shadowIndices.append(i * disp + offset + 2);
-        shadowIndices.append(oldI * disp + offset + 2);
-        shadowIndices.append(oldI * disp + offset + 1);
-
-        shadowIndices.append(i * disp + offset + 2);
-        shadowIndices.append(i * disp + offset + 3);
-        shadowIndices.append(oldI * disp + offset + 2);
-
-        shadowIndices.append(i * disp + offset + 3);
-        shadowIndices.append(oldI * disp + offset + 3);
-        shadowIndices.append(oldI * disp + offset + 2);
-
-        shadowIndices.append(i * disp + offset + 3);
-        shadowIndices.append(i * disp + offset + 0);
-        shadowIndices.append(oldI * disp + offset + 3);
-
-        shadowIndices.append(i * disp + offset + 0);
-        shadowIndices.append(oldI * disp + offset + 0);
-        shadowIndices.append(oldI * disp + offset + 3);
-
-        oldI = i;
-      }
-
+      shadowIndices.append(i * disp + offset + 1);
       shadowIndices.append(oldI * disp + offset + 1);
       shadowIndices.append(oldI * disp + offset + 0);
+
+      shadowIndices.append(i * disp + offset + 1);
+      shadowIndices.append(i * disp + offset + 2);
+      shadowIndices.append(oldI * disp + offset + 1);
+
+      shadowIndices.append(i * disp + offset + 2);
+      shadowIndices.append(oldI * disp + offset + 2);
+      shadowIndices.append(oldI * disp + offset + 1);
+
+      shadowIndices.append(i * disp + offset + 2);
+      shadowIndices.append(i * disp + offset + 3);
       shadowIndices.append(oldI * disp + offset + 2);
 
-      shadowIndices.append(oldI * disp + offset + 0);
+      shadowIndices.append(i * disp + offset + 3);
       shadowIndices.append(oldI * disp + offset + 3);
       shadowIndices.append(oldI * disp + offset + 2);
+
+      shadowIndices.append(i * disp + offset + 3);
+      shadowIndices.append(i * disp + offset + 0);
+      shadowIndices.append(oldI * disp + offset + 3);
+
+      shadowIndices.append(i * disp + offset + 0);
+      shadowIndices.append(oldI * disp + offset + 0);
+      shadowIndices.append(oldI * disp + offset + 3);
+
+      oldI = i;
     }
+
+    shadowIndices.append(oldI * disp + offset + 1);
+    shadowIndices.append(oldI * disp + offset + 0);
+    shadowIndices.append(oldI * disp + offset + 2);
+
+    shadowIndices.append(oldI * disp + offset + 0);
+    shadowIndices.append(oldI * disp + offset + 3);
+    shadowIndices.append(oldI * disp + offset + 2);
   }
 
   updateVertexArrays();
