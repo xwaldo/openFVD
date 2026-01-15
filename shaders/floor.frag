@@ -19,11 +19,11 @@ void main(void)
     {
         oFragColor.xyz = vec3(0.5, 0.5, 0.5);
     }
-    if(grid == 1) oFragColor.xyz *= (texture(rasterTex, rasterCoord).x);
+    if(grid == 1) oFragColor.xyz *= (1.0 + (1.0 - texture(rasterTex, rasterCoord).x) * 0.5);
     float visible = texture(shadowTex, 0.5*(screenCoord.xy/screenCoord.w+vec2(1, 1))).x;
     if(visible > 0) visible = 1;
     else visible = 0;
     oFragColor.xyz -= 0.5*(1-visible);
     oFragColor.xyz /= opacity;
-    oFragColor.xyz = pow(clamp(oFragColor.xyz, 0, 1), vec3(1.f/2.2f, 1.f/2.2f, 1.f/2.2f));
+    //oFragColor.xyz = pow(clamp(oFragColor.xyz, 0, 1), vec3(1.f/2.2f, 1.f/2.2f, 1.f/2.2f));
 }

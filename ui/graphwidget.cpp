@@ -49,6 +49,12 @@ graphWidget::graphWidget(QWidget *parent, trackHandler *_track)
   ui->plotter->yAxis->grid()->setVisible(false);
   ui->plotter->yAxis2->setVisible(true);
 
+  QColor graphColor = Qt::white;
+  ui->plotter->xAxis->setBasePen(QPen(graphColor, 1));
+  ui->plotter->xAxis->setTickPen(QPen(graphColor));
+  ui->plotter->xAxis->setSubTickPen(QPen(graphColor));
+  ui->plotter->xAxis->setTickLabelColor(graphColor);
+
   yAxes[0] = ui->plotter->yAxis;
   yAxes[1] = ui->plotter->yAxis2;
   yAxes[2] = ui->plotter->axisRect()->addAxis(QCPAxis::atRight);
@@ -60,12 +66,17 @@ graphWidget::graphWidget(QWidget *parent, trackHandler *_track)
   yAxes[3]->setLabel(QString("Yaw"));
 
   ui->plotter->xAxis->grid()->setPen(
-      QPen(QColor(220, 220, 220), 1, Qt::DotLine));
+      QPen(QColor(80, 80, 80), 1, Qt::DotLine));
   ui->plotter->xAxis->grid()->setZeroLinePen(
-      QPen(QPen(QColor(220, 220, 220), 1)));
+      QPen(QPen(QColor(80, 80, 80), 1)));
   for (int i = 0; i < 4; ++i) {
-    yAxes[i]->grid()->setPen(QPen(QColor(220, 220, 220), 1, Qt::DotLine));
-    yAxes[i]->grid()->setZeroLinePen(QPen(QPen(QColor(220, 220, 220), 1)));
+    yAxes[i]->setLabelColor(graphColor);
+    yAxes[i]->setTickLabelColor(graphColor);
+    yAxes[i]->setBasePen(QPen(graphColor, 1));
+    yAxes[i]->setTickPen(QPen(graphColor, 1));
+    yAxes[i]->setSubTickPen(QPen(graphColor, 1));
+    yAxes[i]->grid()->setPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
+    yAxes[i]->grid()->setZeroLinePen(QPen(QPen(QColor(80, 80, 80), 1)));
   }
 
   pGraphList.append(new graphHandler(

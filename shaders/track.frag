@@ -22,14 +22,13 @@ void main(void)
     vec3 h = normalize(normalize(-bPosition.xyz) - lightDir);
     float specular = max(dot(h, normal), 0);
     vec3 reflection = -normalize(reflect(vec3(bPosition), normal));
-    specular = (0.5*pow(specular, 120) + 0.5*pow(specular, 12));
+    specular = (0.2*pow(specular, 220) + 0.2*pow(specular, 4));
     reflection = texture(skyTex, reflection).xyz;
     float diffusal = max(dot(normal, -lightDir), 0);
     float visible = texture(shadowTex, 0.5*(screenCoord.xy/screenCoord.w+vec2(1, 1))).x;
+    visible = mix(0.4, 1.0, visible);
     float ambient = 0.4-0.3*texture(occlusionTex, 0.5*(screenCoord.xy/screenCoord.w+vec2(1, 1))).x;
     m_color = (1-0.1*diffusal)*m_color + 0.1*diffusal*reflection;
     oFragColor = vec4(ambient*m_color, 1);
     oFragColor.xyz += visible*(0.5*diffusal*m_color + 0.5*specular*reflection);
-    oFragColor.xyz = pow(clamp(oFragColor.xyz, 0, 1), vec3(1.f/2.2f, 1.f/2.2f, 1.f/2.2f));
-   // oFragColor = vec4(visible, visible, visible, 1);
 }

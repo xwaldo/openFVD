@@ -48,9 +48,9 @@ trackHandler::trackHandler(QString _name, int _id) {
 
   tabId = -1;
 
-  trackColors[0] = QColor(20, 20, 130);
-  trackColors[1] = QColor(255, 51, 51);
-  trackColors[2] = QColor(51, 255, 51);
+  trackColors[0] = QColor(70, 70, 255);
+  trackColors[1] = QColor(255, 70, 70);
+  trackColors[2] = QColor(70, 255, 70);
 
   mUndoHandler = new undoHandler(gloParent->mOptions->maxUndoChanges);
   mMesh = new trackMesh(trackData);
