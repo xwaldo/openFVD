@@ -39,18 +39,20 @@ class smoothHandler;
 class trackHandler;
 
 enum trackStyle {
-  generic = 0,
+  generic,
   genericflat,
-  box,
-  doublespine,
   smallflat,
-  arrow,
-  bm,
-  gci,
-  intamin,
   mack,
+  intamin,
+  box,
+  bm,
+  newbm,
+  bmclassic8dive,
+  vekoma,
   rmc,
-  vekoma
+  gci,
+  arrow,
+  doublespine,
 };
 
 class track {
@@ -103,7 +105,7 @@ public:
   float startPitch;
 
   section *activeSection;
-
+  
   float fHeart;
   float fGauge;
   float fFriction;

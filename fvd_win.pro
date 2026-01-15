@@ -181,6 +181,12 @@ OTHER_FILES += \
     shaders/stl.frag \
     shaders/debug.vert \
     shaders/debug.frag \
+    crossties/bm_classic.obj \
+    crossties/bm_classic_connector.obj \
+    crossties/bm_modern.obj \
+    crossties/bm_modern_connector.obj \
+    crossties/vekoma_mk1101_mid.obj \
+    crossties/bm_classic8Dive.obj \
     metalnormals.png \
     readme.txt \
     sky/negx.jpg \

@@ -28,5 +28,11 @@
         <file>shaders/stl.vert</file>
         <file>shaders/track.frag</file>
         <file>shaders/track.vert</file>
+        <file>crossties/vekoma_mk1101_mid.obj</file>
+        <file>crossties/bm_classic_connector.obj</file>
+        <file>crossties/bm_classic.obj</file>
+        <file>crossties/bm_modern_connector.obj</file>
+        <file>crossties/bm_modern.obj</file>
+        <file>crossties/bm_classic8Dive.obj</file>
     </qresource>
 </RCC>

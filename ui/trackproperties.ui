@@ -191,7 +191,7 @@
          <double>0.500000000000000</double>
         </property>
         <property name="maximum">
-         <double>2.500000000000000</double>
+         <double>2.000000000000000</double>
         </property>
         <property name="singleStep">
          <double>0.100000000000000</double>
@@ -214,11 +214,6 @@
           <width>45</width>
           <height>16777215</height>
          </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
         </property>
         <property name="layoutDirection">
          <enum>Qt::LayoutDirection::RightToLeft</enum>
@@ -346,37 +341,7 @@
         </item>
         <item>
          <property name="text">
-          <string>Box</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Double Spine</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
           <string>Small Flat</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Arrow</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>B&amp;M</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>GCI</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Intamin</string>
          </property>
         </item>
         <item>
@@ -386,12 +351,52 @@
         </item>
         <item>
          <property name="text">
-          <string>RMC</string>
+          <string>Intamin</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Box</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>B&amp;M</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>B&amp;M [New]</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>B&amp;M 8Dive Classic</string>
          </property>
         </item>
         <item>
          <property name="text">
           <string>Vekoma</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>RMC</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>GCI</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Arrow</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Double Spine</string>
          </property>
         </item>
        </widget>

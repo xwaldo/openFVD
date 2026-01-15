@@ -19,10 +19,11 @@
 #    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-//#include "mypanelopengl.h"
+// #include "mypanelopengl.h"
 #include "glviewwidget.h"
 
-typedef struct tracknode_s {
+typedef struct tracknode_s
+{
   glm::vec3 pos;
   glm::vec3 normal;
   glm::vec2 uv;
@@ -35,19 +36,22 @@ typedef struct tracknode_s {
   int node;
 } tracknode_t;
 
-typedef struct meshnode_s {
+typedef struct meshnode_s
+{
   glm::vec3 pos;
   int node;
 } meshnode_t;
 
-typedef struct pipeoption_s {
+typedef struct pipeoption_s
+{
   int edges;
   glm::vec2 radius;
   glm::vec2 offset;
   bool smooth;
 } pipeoption_t;
 
-class trackMesh {
+class trackMesh
+{
 public:
   trackMesh(track *parent = NULL);
   ~trackMesh();
@@ -63,10 +67,22 @@ public:
   void createBox(QVector<tracknode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
                  glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r, glm::vec3 P2r,
                  glm::vec3 P3r, glm::vec3 P4r, bool hollow = true);
+  static QMap<QString, std::tuple<
+                           QVector<glm::vec3>,  // Vertices
+                           QVector<glm::ivec3>, // Faces
+                           QVector<glm::ivec3>, // Normal indices
+                           QVector<glm::ivec3>, // Texture coordinate indices
+                           QVector<glm::vec3>,  // Normals
+                           QVector<glm::vec2>>>
+      objCache;
+  void loadObj(QVector<tracknode_t> &list, QVector<meshnode_t> &shadowlist, const QString &filePath, mnode *curNode, float fHeart, float scale);
   void createBox(QVector<meshnode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
                  glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r, glm::vec3 P2r,
                  glm::vec3 P3r, glm::vec3 P4r, bool hollow = true);
   int createShadowBox(QVector<meshnode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
+                      glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r,
+                      glm::vec3 P2r, glm::vec3 P3r, glm::vec3 P4r);
+  int createShadowBox(QVector<tracknode_t> &list, glm::vec3 P1l, glm::vec3 P2l,
                       glm::vec3 P3l, glm::vec3 P4l, glm::vec3 P1r,
                       glm::vec3 P2r, glm::vec3 P3r, glm::vec3 P4r);
   void create3dsBox(QVector<float> *_vertices, QVector<unsigned int> *_indices,
@@ -80,6 +96,8 @@ public:
   void create3dsQuad(QVector<float> *_vertices, QVector<unsigned int> *_indices,
                      glm::vec3 P1, glm::vec3 P2, glm::vec3 P3, glm::vec3 P4);
   int createShadowTriangle(QVector<meshnode_t> &list, glm::vec3 P1,
+                           glm::vec3 P2, glm::vec3 P3);
+  int createShadowTriangle(QVector<tracknode_t> &list, glm::vec3 P1,
                            glm::vec3 P2, glm::vec3 P3);
 
   void createSupport(QVector<tracknode_t> &list, int edges, float radiusy,
