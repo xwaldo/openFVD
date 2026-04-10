@@ -2,7 +2,6 @@
 *.slo
 *.lo
 *.o
-*.obj
 
 # precompiled headers
 *.gch
@@ -28,3 +27,4 @@
 # qt crap
 *.pro.user
 *.user
+/build
