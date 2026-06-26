@@ -813,10 +813,13 @@ int track::exportTrack4(fstream *file, float mPerNode, int fromIndex,
 
 void track::exportNL2Track(FILE *file, float mPerNode, int fromIndex,
                            int toIndex) {
+  const bool ENABLE_WORLD_TRANSFORM = true;
+  const bool ENABLE_BBOX_CENTER_OFFSET = true;
+
   QList<int> exportPoints, rollPoints;
-  mnode *anchor = &lSections.at(fromIndex)->lNodes[0];
   exportPoints.append(getNumPoints(lSections.at(fromIndex)));
   rollPoints.append(getNumPoints(lSections.at(fromIndex)));
+
   for (int i = fromIndex; i <= toIndex; ++i) {
     lSections.at(i)->fFillPointList(exportPoints, mPerNode);
   }
@@ -826,15 +829,15 @@ void track::exportNL2Track(FILE *file, float mPerNode, int fromIndex,
   }
 
   size_t size = exportPoints.size();
-  QVector<float> a = QVector<float>(size);
-  QVector<float> b = QVector<float>(size);
-  QVector<float> c = QVector<float>(size);
-  QVector<glm::vec3> d = QVector<glm::vec3>(size);
+
+  QVector<float> a(size), b(size), c(size);
+
+  QVector<glm::vec3> d(size);
 
   for (size_t i = 0; i < size; ++i) {
     int point = exportPoints[i];
     mnode *curNode = getPoint(point < 0 ? -point : point);
-    d[i] = curNode->vPos - anchor->vPos;
+    d[i] = curNode->vPos;
     if (i == 0 || i == size - 1 || point < 0) {
       a[i] = 0.f;
       b[i] = 1.f;
@@ -919,15 +922,11 @@ void track::exportNL2Track(FILE *file, float mPerNode, int fromIndex,
 
       float p = b / 2.f;
       float x0 = -p + sqrt(p * p - c);
-      // float x1 = -p - sqrt(p*p - c); // second solution (unsused)
 
       e.append(
           glm::vec4(getPoint(ppoint)->vPos - x0 * getPoint(ppoint)->vDir, 0.f));
       e.append(
           glm::vec4(getPoint(npoint)->vPos + x0 * getPoint(npoint)->vDir, 0.f));
-
-      // qDebug("%f, %f", x0, x1);
-
     } else if (strict == 6) {
       e.append(glm::vec4(d[i], 1.f));
     } else if (strict == 7) {
@@ -938,13 +937,45 @@ void track::exportNL2Track(FILE *file, float mPerNode, int fromIndex,
   }
   e.append(glm::vec4(d[size - 1], 1.f));
 
-  float temp = glm::length(glm::vec3(anchor->vDir.x, 0.f, anchor->vDir.z));
-  glm::mat3 anchorBase = glm::transpose(
-      glm::mat3(-anchor->vDir.z / temp, 0.f, anchor->vDir.x / temp, 0.f, 1.f,
-                0.f, -anchor->vDir.x / temp, 0.f, -anchor->vDir.z / temp));
+  std::vector<glm::vec3> transformed;
+  transformed.resize(e.size());
 
-  for (int i = 0; i < e.size(); ++i) {
-    glm::vec3 ex = anchorBase * glm::vec3(e[i]);
+  if (ENABLE_WORLD_TRANSFORM) {
+    glm::mat4 anchorBase =
+        glm::translate(this->startPos) *
+        glm::rotate(TO_RAD(this->startYaw - 90.f), glm::vec3(0.f, 1.f, 0.f));
+    for (int i = 0; i < e.size(); ++i) {
+      transformed[i] = glm::vec3(anchorBase * glm::vec4(glm::vec3(e[i]), 1.f));
+    }
+  } else {
+    for (int i = 0; i < e.size(); ++i) {
+      transformed[i] = glm::vec3(e[i]);
+    }
+  }
+
+  // bounding box
+  glm::vec3 bboxMin = transformed[0];
+  glm::vec3 bboxMax = transformed[0];
+  for (int i = 1; i < transformed.size(); ++i) {
+    glm::vec3 p = transformed[i];
+    bboxMin = glm::min(bboxMin, p);
+    bboxMax = glm::max(bboxMax, p);
+  }
+
+  glm::vec3 firstVertex = transformed[0];
+  glm::vec3 cancellationOffset = glm::vec3(0.f);
+  if (ENABLE_BBOX_CENTER_OFFSET) {
+    glm::vec3 bboxCenter = (bboxMin + bboxMax) * 0.5f;
+
+    cancellationOffset.x = bboxCenter.x - transformed[0].x;
+    cancellationOffset.z = bboxCenter.z - transformed[0].z;
+
+    cancellationOffset.y = (bboxMin.y - transformed[0].y) - 1.5f;
+    qDebug("bboxMin%.4f, transformed[0].y%.4f", bboxMin.y, transformed[0].y);
+  }
+  for (int i = 0; i < transformed.size(); ++i) {
+    glm::vec3 ex = transformed[i] + cancellationOffset;
+
     fprintf(file, "\t\t\t<vertex>\n");
     fprintf(file, "\t\t\t\t<x>%e</x>\n", ex.x);
     fprintf(file, "\t\t\t\t<y>%e</y>\n", ex.y);
@@ -963,8 +994,15 @@ void track::exportNL2Track(FILE *file, float mPerNode, int fromIndex,
     int point = exportPoints[i];
     mnode *curNode = getPoint(point < 0 ? -point : point);
 
-    glm::vec3 up = anchorBase * (-curNode->vNorm);
-    glm::vec3 right = anchorBase * (curNode->vLat);
+    glm::vec3 up = -curNode->vNorm;
+    glm::vec3 right = curNode->vLat;
+    if (ENABLE_WORLD_TRANSFORM) {
+      glm::mat4 anchorBase =
+          glm::translate(this->startPos) *
+          glm::rotate(TO_RAD(this->startYaw - 90.f), glm::vec3(0.f, 1.f, 0.f));
+      up = glm::vec3(anchorBase * glm::vec4(up, 0.f));
+      right = glm::vec3(anchorBase * glm::vec4(right, 0.f));
+    }
     float coord = (curNode->fTotalHeartLength - startLen) / (endLen - startLen);
 
     fprintf(file, "\t\t\t<roll>\n");
